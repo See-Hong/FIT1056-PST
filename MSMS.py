@@ -8,7 +8,7 @@ class Student:
     
     def get_details(self):
         """Prints a formatted string containing the students details."""
-        print(f"ID: {self.id}\nName: {self.name}\nEnrolled in: {self.enrolled_in}")
+        print(f"ID: {self.id}\nName: {self.name.title()}\nEnrolled in: {self.enrolled_in}")
 
 class Teacher:
     """A blueprint for teacher objects. Stores teacher info as attributes."""
@@ -19,7 +19,7 @@ class Teacher:
     
     def get_details(self):
         """Prints a formatted string containing the teachers details."""
-        print(f"ID: {self.id}\nName: {self.name}\nSpecialty: {self.specialty}")
+        print(f"ID: {self.id}\nName: {self.name.title()}\nSpecialty: {self.specialty.title()}")
 
 
 # In-Memory Databases
@@ -110,11 +110,37 @@ def front_desk_enrol(student_id, instrument):
     """High-level function to enrol an existing student in a course."""
     enrolling_student = find_student_by_id(student_id)
     if enrolling_student:
-        enrolling_student.enrolled_in.append(instrument)
-        print(f"Front Desk: Enrolled student {student_id} in '{instrument}'.")
+        # Checks if student is already enrolled in an instrument.
+        for enrolled_instrument in enrolling_student.enrolled_in:
+            if instrument.lower() in enrolled_instrument.lower():
+                print(f"Error: Student ID {student_id} already enrolled in {instrument}.")
+                break
+        # Runs if student is not already enrolled in the instrument.
+        else:
+            enrolling_student.enrolled_in.append(instrument.title())
+            print(f"Front Desk: Enrolled student ID {student_id} in '{instrument}'.")
     else:
         print(f"Error: Student ID {student_id} not found.")
 
+def front_desk_unenrol(student_id):
+    """High-level function to unenrol an existing student in a course."""
+    selected_student = find_student_by_id(student_id)
+    if selected_student:
+        enrolled_instruments = selected_student.enrolled_in
+        if enrolled_instruments:
+            # Lists instruments the current student is enrolled in and waits for user input.
+            print(f"The current student is enrolled in {enrolled_instruments}")
+            instrument = input("Please select which instrument to unenrol the student in.\n")
+            # Checks if student is enrolled in the instrument.
+            try: 
+                enrolled_instruments.remove(instrument)
+                print(f"Front Desk: Unenrolled student {student_id} in {instrument}.")
+            except ValueError:
+                print(f"Error: The current student is not enrolled in {instrument}.")
+        else:
+            print("The current student is not enrolled in any instruments.")
+    else:
+        print(f"Error: Student ID {student_id} not found.")
 
 def front_desk_lookup(term: str):
     """High-level function to search everything."""
@@ -122,3 +148,75 @@ def front_desk_lookup(term: str):
     find_students(term)
     find_teachers(term)
 
+
+# Main Application
+def main():
+    """Runs the main interactive menu for the receptionist."""
+    
+
+    while True:
+        print("\n===== Music School Front Desk =====")
+        print("1. Register New Student")
+        print("2. Enrol Existing Student")
+        print("3. Unenroll Existing Student")
+        print("4. Lookup Student or Teacher")
+        print("5. (Admin) Register New Teacher")
+        print("6. (Admin) List all Students")
+        print("7. (Admin) List all Teachers")
+        print("q. Quit")
+
+        choice = input("Enter your choice: ")
+        
+        if choice == "1":
+            # Registers New Student
+            student_name = input("Enter student name: ")
+            instrument = input("Enter instrument to enrol in: ")
+            front_desk_register(student_name, instrument=instrument)
+
+        elif choice == "2":
+            # Enrols Existing Student
+            try:
+                student_id = int(input("Enter student ID: "))
+                instrument = input("Enter instrument to enrol in: ")
+                front_desk_enrol(student_id, instrument)
+            except ValueError:
+                print("Invalid ID. Please enter a number.")
+
+        elif choice == "3":
+            # Unenrols Existing Student
+            try:
+                student_id = int(input("Enter student ID: "))
+                front_desk_unenrol(student_id)
+            except ValueError:
+                print("Invalid ID. Please enter a number.")
+
+        elif choice == "4":
+            # Searches students and teachers
+            term = input("Enter search term:")
+            front_desk_lookup(term)
+
+        elif choice == "5":
+            # Adds new teacher
+            teacher_name = input("Enter teacher name: ")
+            specialty = input("Enter teacher specialty: ")
+            add_teacher(teacher_name, specialty=specialty)
+
+        elif choice == "6":
+            # Lists all students
+            list_students()
+
+        elif choice == "7":
+            # Lists all teachers
+            list_teachers()
+
+        elif choice.lower() == "q":
+            # Quits program
+            print("Exiting program. Goodbye!")
+            break
+
+        else:
+            print("Invalid choice. Please try again.")
+
+# Program Start
+if __name__ == "__main__":
+    main()
