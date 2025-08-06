@@ -165,7 +165,7 @@ def main():
         print("7. (Admin) List all Teachers")
         print("q. Quit")
 
-        choice = input("Enter your choice: ")
+        choice = input("Enter your choice: ").strip()
         
         if choice == "1":
             # Registers New Student
