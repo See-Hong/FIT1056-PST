@@ -1,7 +1,39 @@
 {
-    "students": [],
-    "teachers": [],
-    "attendance": [],
-    "next_student_id": 1,
-    "next_teacher_id": 1
+    "students": [
+        {
+            "name": "Bob",
+            "id": 1,
+            "courses": [
+                "piano"
+            ]
+        },
+        {
+            "name": "Lisa",
+            "id": 2,
+            "courses": [
+                "drums"
+            ]
+        }
+    ],
+    "teachers": [
+        {
+            "name": "Lisa",
+            "id": 1,
+            "specialty": "Piano"
+        },
+        {
+            "name": "Mike",
+            "id": 2,
+            "specialty": "Drums"
+        }
+    ],
+    "attendance": [
+        {
+            "id": 1,
+            "course": "piano",
+            "timestamp": "2025-08-15T20:32"
+        }
+    ],
+    "next_student_id": 3,
+    "next_teacher_id": 3
 }
