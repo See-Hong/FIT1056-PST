@@ -1,10 +1,16 @@
-from user import User
+from app.user import User
 
 class TeacherUser(User):
     """Represents a teacher user, inheriting from the base User class."""
     def __init__(self, teacher_id, name, specialty):
         super().__init__(teacher_id, name)
         self.specialty = specialty
+
+    def __str__(self):
+        """String representation of a teacher object."""
+        return (f"Name: {self.name}"
+                f"ID: {self.id}"
+                f"Specialty: {self.specialty}")
 
 class Course:
     """Base class for courses in the system."""
@@ -15,4 +21,22 @@ class Course:
         self.teacher_id = teacher_id
         self.enrolled_students = []
         self.lessons = []
+
+    def __str__(self):
+        """String representation of a course object"""
+        return (f"Name: {self.name}"
+                f"Course ID: {self.id}"
+                f"Instrument: {self.instrument}"
+                f"Teacher ID: {self.teacher_id}"
+                f"Enrolled Student ID: {self.enrolled_students}"
+                )
+
+    def get_lessons(self):
+        """Gets the lessons for a course."""
+        for lesson in self.lessons:
+            print(f"Name: {self.name}"
+                  f"Lesson ID: {lesson["lesson_id"]}"
+                  f"Day: {lesson["day"]}"
+                  f"Start Time: {lesson["start_time"]}"
+                  f"Room: {lesson["room"]}")
 
