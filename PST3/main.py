@@ -159,11 +159,11 @@ def front_desk_daily_roster(manager, day):
         print(f"No lessons for {day}.")
 
 # Core Helper Functions
-def front_desk_register(manager, name, course):
+def front_desk_register(manager, name, course_id):
     """High-level function to register a new student and enrol them."""
     student = manager.add_student(name)
     # Enrols new student in provided instrument
-    manager.enrol_student(student, course)
+    manager.enrol_student(student, course_id)
     print(f"Front Desk: Successfully registered '{name}' and enrolled them in '{course}'.")
 
 def front_desk_lookup(manager, term, search=None):
@@ -223,8 +223,8 @@ def main():
         if choice == "s1":
             # Registers New Student
             student_name = input("Enter student name: ").strip()
-            course = input("Enter course to enrol in: ").strip()
-            front_desk_register(manager, student_name, course=course)
+            course_id = input("Enter course ID to enrol in: ").strip()
+            front_desk_register(manager, student_name, course_id=course_id)
         elif choice == "s2":
             # Enrols Existing Student
             try:
