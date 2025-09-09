@@ -1,4 +1,3 @@
-from PST2.pst2_main import find_by_id
 from app.student import StudentUser
 from app.teacher import  TeacherUser, Course
 import json
@@ -20,6 +19,7 @@ class ScheduleManager:
         self.next_lesson_id = 1
         self.file_path = file_path
         self._load_data()
+        print(self.courses)
 
     # Data management functions.
     def _load_data(self):
@@ -36,10 +36,9 @@ class ScheduleManager:
             # Checks if the current data file contains id counters.
             # If not, sets them to the next number from the highest id.
             # If there is no data for the counters, sets it to the default value.
-            self.next_student_id = data.get("next_student_id") or (max(student.id for student in self.students) + 1 if self.students else 1)
-            self.next_teacher_id = data.get("next_teacher_id") or (max(teacher.id for teacher in self.teachers) + 1 if self.teachers else 1)
-            self.next_course_id = data.get("next_course_id") or (max(course.id for course in self.courses) + 1 if self.courses else 101)
-            # Counter for lessons
+            self.next_student_id = max(student.id for student in self.students) + 1 if self.students else 1
+            self.next_teacher_id = max(teacher.id for teacher in self.teachers) + 1 if self.teachers else 1
+            self.next_course_id = max(course.id for course in self.courses) + 1 if self.courses else 101            # Counter for lessons
             lesson_list = [course.lessons for course in self.courses]
             all_lessons = []
             # Flatten lesson_list
@@ -58,9 +57,6 @@ class ScheduleManager:
             "teachers": [teacher.__dict__ for teacher in self.teachers],
             "courses": [course.__dict__ for course in self.courses],
             "attendance": self.attendance_log,
-            "next_student_id": self.next_student_id,
-            "next_teacher_id": self.next_teacher_id,
-            "next_course_id": self.next_course_id,
         }
         with open(file=self.file_path, mode="w") as file:
             json.dump(app_data, fp=file, indent=5)
@@ -73,7 +69,7 @@ class ScheduleManager:
                 student_id=student["id"],
                 name=student["name"]
             )
-            new_student.enrolled_courses = student.get("enrolled_course_ids", [])
+            new_student.enrolled_courses = student.get("enrolled_courses", [])
             self.students.append(new_student)
 
     def load_teachers(self, data):
@@ -95,7 +91,7 @@ class ScheduleManager:
                 instrument=course["instrument"],
                 teacher_id=course["teacher_id"],
             )
-            new_course.enrolled_students = course.get("enrolled_student_ids", [])
+            new_course.enrolled_students = course.get("enrolled_students", [])
             new_course.lessons = course.get("lessons", [])
             self.courses.append(new_course)
 
@@ -112,7 +108,7 @@ class ScheduleManager:
         return new_student.id
 
     def remove_student(self, student_id):
-        student = find_by_id(student_id)
+        student = self.find_by_id(student_id)
         print(student)
         if student:
             self.students.remove(student)
@@ -122,8 +118,8 @@ class ScheduleManager:
             print(f"Error: Student ID {student_id} not found.")
 
     def enrol_student(self, student_id, course_id):
-        student = find_by_id(student_id)
-        course = find_by_id(course_id, search="course")
+        student = self.find_by_id(student_id)
+        course = self.find_by_id(course_id, search="course")
         if not (student and course):
             print("Error: Student ID or Course ID invalid.")
             return False
@@ -137,8 +133,8 @@ class ScheduleManager:
         return True
 
     def disenroll_student(self, student_id, course_id):
-        student = find_by_id(student_id)
-        course = find_by_id(course_id, search="course")
+        student = self.find_by_id(student_id)
+        course = self.find_by_id(course_id, search="course")
         if not (student and course):
             print("Error: Student ID or Course ID invalid.")
             return False
@@ -190,7 +186,7 @@ class ScheduleManager:
             except ValueError:
                 print("Error: Date invalid")
                 print("Using current date.")
-        student = find_by_id(student_id)
+        student = self.find_by_id(student_id)
         # Checks if the student exist before continuing.
         if student:
             record_list = []
@@ -233,7 +229,7 @@ class ScheduleManager:
 
     def remove_teacher(self, teacher_id):
         """Removes an existing teacher from the system."""
-        teacher = find_by_id(teacher_id, search="teacher")
+        teacher = self.find_by_id(teacher_id, search="teacher")
         if teacher:
             self.teachers.remove(teacher)
             print(f"Teacher ID {teacher_id} has been removed.")
@@ -246,7 +242,7 @@ class ScheduleManager:
 
     def add_course(self, name, instrument, teacher_id):
         """Adds a course to the system."""
-        teacher = find_by_id(teacher_id, search="teacher")
+        teacher = self.find_by_id(teacher_id, search="teacher")
         if teacher:
             new_course = Course(
                 name=name,
@@ -262,7 +258,7 @@ class ScheduleManager:
 
     def remove_course(self, course_id):
         """Removes an existing teacher from the system."""
-        course = find_by_id(course_id, search="course")
+        course = self.find_by_id(course_id, search="course")
         if course:
             self.courses.remove(course)
             print(f"Course ID {course_id} has been removed.")
@@ -272,7 +268,7 @@ class ScheduleManager:
 
     def add_lesson(self, course_id, lesson_day, start_time, room):
         """Adds a new lesson to a course in the system."""
-        course = find_by_id(course_id, search="course")
+        course = self.find_by_id(course_id, search="course")
         day_list = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
         try:
             day = parser.parse(lesson_day, fuzzy=True).strftime("%A")
@@ -302,19 +298,19 @@ class ScheduleManager:
         specialty = kwargs.get("specialty")
         instrument = kwargs.get("instrument")
         if type_ == "student":
-            student = find_by_id(id_)
+            student = self.find_by_id(id_)
             if name:
                 student.name = name
             print(f"Successfully changed student ID {id_} data.")
         elif type_ == "teacher":
-            teacher = find_by_id(id_, search="teacher")
+            teacher = self.find_by_id(id_, search="teacher")
             if name:
                 teacher.name = name
             if specialty:
                 teacher.specialty = specialty
             print(f"Successfully changed teacher ID {id_} data.")
         elif type_ == "course":
-            course = find_by_id(id_, search="course")
+            course = self.find_by_id(id_, search="course")
             if name:
                 course.name = name
             if instrument:

@@ -51,10 +51,11 @@ PST3/
 📚 Course Management
 ```
 - Show today's lessons
+- List all courses
+- Get course lessons
   - ⚠️ **Admin Only**:
     - Add new courses
     - Remove courses
-    - List all courses
     - Adds lessons to courses
 ```
 
@@ -109,10 +110,11 @@ T4. (Admin) List all Teachers
 
 ----- Course Manager -----
 C1. Today's Lessons
-C2. (Admin) Add Course
-C3. (Admin) Remove Course
-C4. (Admin) List Courses
-C5. (Admin) Add Lessons
+C2. List Courses
+C3. Get Lessons
+C4. (Admin) Add Course
+C5. (Admin) Remove Course
+C6. (Admin) Add Lessons
 
 ----- Others -----
 O1. Lookup Student, Teacher or Course
@@ -131,5 +133,4 @@ Enrolled student ID 1 in course ID 101
 ```
 
 ## Dependencies
-
 - [python-dateutil](https://dateutil.readthedocs.io/en/stable/)

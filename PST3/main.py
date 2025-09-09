@@ -141,6 +141,14 @@ def list_courses(manager):
     else:
         print("Error: No teachers found in the system.")
 
+def get_lessons(manager, course_id):
+    """Gets the lessons for a course"""
+    course = manager.find_by_id(course_id, search="course")
+    if course:
+        course.get_lessons()
+    else:
+        print(f"Error: Course ID {course_id} not found.")
+
 def front_desk_daily_roster(manager, day):
     """Displays a pretty table of all lessons on a given day."""
     print(f"\n--- Daily Roster for {day} ---")
@@ -149,11 +157,11 @@ def front_desk_daily_roster(manager, day):
         for lesson in course.lessons:
             if lesson["day"] == day:
                 lessons_available = True
-                teacher = manager.find_by_id(course["teacher_id"])
+                teacher = manager.find_by_id(course.teacher_id, search="teacher")
                 print(f"Course: {course.name}"
-                      f"Teacher: {teacher.name}"
-                      f"Start Time: {lesson["start_time"]}"
-                      f"Room: {lesson["room"]}")
+                      f"\nTeacher: {teacher.name}"
+                      f"\nStart Time: {lesson["start_time"]}"
+                      f"\nRoom: {lesson["room"]}")
                 print("-" * 20)
     if not lessons_available:
         print(f"No lessons for {day}.")
@@ -163,8 +171,11 @@ def front_desk_register(manager, name, course_id):
     """High-level function to register a new student and enrol them."""
     student = manager.add_student(name)
     # Enrols new student in provided instrument
-    manager.enrol_student(student, course_id)
-    print(f"Front Desk: Successfully registered '{name}' and enrolled them in '{course}'.")
+    enrol = manager.enrol_student(student, course_id)
+    if not enrol:
+        manager.remove_student(student)
+    else:
+        print(f"Front Desk: Successfully registered '{name}' and enrolled them in course ID {course_id}.")
 
 def front_desk_lookup(manager, term, search=None):
     """High-level function to search everything."""
@@ -205,11 +216,12 @@ def main():
 
         print("\n----- Course Manager -----")
         print("C1. Today's Lessons")
+        print("C2. List Courses")
+        print("C3. Get Lessons")
         if is_admin:
-            print("C2. (Admin) Add Course")
-            print("C3. (Admin) Remove Course")
-            print("C4. (Admin) List Courses")
-            print("C5. (Admin) Add lessons ")
+            print("C4. (Admin) Add Course")
+            print("C5. (Admin) Remove Course")
+            print("C6. (Admin) Add lessons ")
         print("\n----- Others -----")
         print("O1. Lookup Student, Teacher or Course")
         if is_admin:
@@ -223,7 +235,7 @@ def main():
         if choice == "s1":
             # Registers New Student
             student_name = input("Enter student name: ").strip()
-            course_id = input("Enter course ID to enrol in: ").strip()
+            course_id = int(input("Enter course ID to enrol in: ").strip())
             front_desk_register(manager, student_name, course_id=course_id)
         elif choice == "s2":
             # Enrols Existing Student
@@ -326,7 +338,17 @@ def main():
             # Shows all lessons for the day.
             day = dt.datetime.today().strftime("%A")
             front_desk_daily_roster(manager, day=day)
-        elif choice == "c2" and is_admin:
+        elif choice == "c2":
+            # Lists all courses
+            list_courses(manager)
+        elif choice == "c3":
+            # Gets lessons for a course
+            try:
+                course_id = int(input("Enter course ID: ").strip())
+                get_lessons(manager, course_id)
+            except ValueError:
+                print("Invalid ID. Please enter a number.")
+        elif choice == "c4" and is_admin:
             # Adds a new course
             try:
                 name = input("Enter course name: ").strip()
@@ -335,17 +357,14 @@ def main():
                 manager.add_course(name=name, instrument=instrument, teacher_id=teacher_id)
             except ValueError:
                 print("Invalid ID. Please enter a number.")
-        elif choice == "c3" and is_admin:
+        elif choice == "c5" and is_admin:
             # Removes an existing course
             try:
                 course_id = int(input("Enter course ID: ").strip())
                 manager.remove_course(course_id)
             except ValueError:
                 print("Invalid ID. Please enter a number.")
-        elif choice == "c4" and is_admin:
-            # Lists all courses
-            list_courses(manager)
-        elif choice == "c5" and is_admin:
+        elif choice == "c6" and is_admin:
             # Add a lesson to a course
             try:
                 course_id = input("Enter course ID: ").strip()

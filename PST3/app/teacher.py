@@ -9,8 +9,8 @@ class TeacherUser(User):
     def __str__(self):
         """String representation of a teacher object."""
         return (f"Name: {self.name}"
-                f"ID: {self.id}"
-                f"Specialty: {self.specialty}")
+                f"\nID: {self.id}"
+                f"\nSpecialty: {self.specialty}")
 
 class Course:
     """Base class for courses in the system."""
@@ -25,18 +25,19 @@ class Course:
     def __str__(self):
         """String representation of a course object"""
         return (f"Name: {self.name}"
-                f"Course ID: {self.id}"
-                f"Instrument: {self.instrument}"
-                f"Teacher ID: {self.teacher_id}"
-                f"Enrolled Student ID: {self.enrolled_students}"
+                f"\nCourse ID: {self.id}"
+                f"\nInstrument: {self.instrument}"
+                f"\nTeacher ID: {self.teacher_id}"
+                f"\nEnrolled Student ID: {self.enrolled_students}"
                 )
 
     def get_lessons(self):
         """Gets the lessons for a course."""
         for lesson in self.lessons:
             print(f"Name: {self.name}"
-                  f"Lesson ID: {lesson["lesson_id"]}"
-                  f"Day: {lesson["day"]}"
-                  f"Start Time: {lesson["start_time"]}"
-                  f"Room: {lesson["room"]}")
+                  f"\nLesson ID: {lesson["lesson_id"]}"
+                  f"\nDay: {lesson["day"]}"
+                  f"\nStart Time: {lesson["start_time"]}"
+                  f"\nRoom: {lesson["room"]}")
+            print("-" * 20)
 

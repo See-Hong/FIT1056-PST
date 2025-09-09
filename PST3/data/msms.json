@@ -19,8 +19,8 @@
      "teachers": [
           {
                "id": 1,
-               "name": "Dr. Evelyn Keys",
-               "specialty": "Piano"
+               "name": "Bob",
+               "specialty": "Flute"
           },
           {
                "id": 2,
@@ -58,7 +58,8 @@
                "instrument": "Guitar",
                "teacher_id": 2,
                "enrolled_students": [
-                    2
+                    2,
+                    3
                ],
                "lessons": [
                     {

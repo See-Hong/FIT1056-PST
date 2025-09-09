@@ -9,5 +9,5 @@ class StudentUser(User):
     def __str__(self):
         """String representation of a student object."""
         return (f"Name: {self.name}"
-                f"ID: {self.id}"
-                f"Enrolled Courses: {self.enrolled_courses}")
+                f"\nID: {self.id}"
+                f"\nEnrolled Courses: {self.enrolled_courses}")
