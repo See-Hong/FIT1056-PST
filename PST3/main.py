@@ -191,7 +191,7 @@ def front_desk_lookup(manager, term, search=None):
 
 def main():
     """Main function to run the MSMS application."""
-    manager = ScheduleManager("./data/msms.json")
+    manager = ScheduleManager("PST3/data/msms.json")
     is_admin = False
     while True:
         print("\n===== MSMS v3 (Object-Oriented) =====")
