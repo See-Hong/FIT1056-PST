@@ -1,4 +1,4 @@
-from app.user import User
+from app4.user import User
 
 class StudentUser(User):
     """Represents a student user, inheriting from the base User class."""

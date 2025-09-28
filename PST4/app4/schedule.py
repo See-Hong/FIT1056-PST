@@ -1,9 +1,10 @@
-from app.student import StudentUser
-from app.teacher import  TeacherUser, Course
+from app4.student import StudentUser
+from app4.teacher import  TeacherUser, Course
 import json
 import datetime as dt
 from dateutil import parser
 import difflib
+import pandas as pd
 
 
 class ScheduleManager:
@@ -19,7 +20,6 @@ class ScheduleManager:
         self.next_lesson_id = 1
         self.file_path = file_path
         self._load_data()
-        print(self.courses)
 
     # Data management functions.
     def _load_data(self):
@@ -113,26 +113,24 @@ class ScheduleManager:
 
     def remove_student(self, student_id):
         student = self.find_by_id(student_id)
-        print(student)
         if student:
             self.students.remove(student)
-            print(f"Successfully removed student ID {student_id}.")
+            for course in student.enrolled_courses:
+                course.remove(student.id)
             self._save_data()
+            return True
         else:
-            print(f"Error: Student ID {student_id} not found.")
+            return False
 
     def enrol_student(self, student_id, course_id):
         student = self.find_by_id(student_id)
         course = self.find_by_id(course_id, search="course")
         if not (student and course):
-            print("Error: Student ID or Course ID invalid.")
             return False
         if course_id in student.enrolled_courses or student_id in course.enrolled_students:
-            print("Error: Student already enrolled in course.")
             return False
         student.enrolled_courses.append(course_id)
         course.enrolled_students.append(student_id)
-        print(f"Enrolled student ID {student_id} in course ID {course_id}")
         self._save_data()
         return True
 
@@ -140,15 +138,12 @@ class ScheduleManager:
         student = self.find_by_id(student_id)
         course = self.find_by_id(course_id, search="course")
         if not (student and course):
-            print("Error: Student ID or Course ID invalid.")
             return False
         if course_id in student.enrolled_courses or student_id in course.enrolled_students:
             student.enrolled_courses.remove(course_id)
             course.enrolled_students.remove(student_id)
-            print(f"Disenrolled student ID {student_id} in course ID {course_id}")
             self._save_data()
             return True
-        print("Error: Student not enrolled in course.")
         return False
 
     def check_in(self, student_id, course_id, timestamp):
@@ -305,22 +300,20 @@ class ScheduleManager:
             student = self.find_by_id(id_)
             if name:
                 student.name = name
-            print(f"Successfully changed student ID {id_} data.")
         elif type_ == "teacher":
             teacher = self.find_by_id(id_, search="teacher")
             if name:
                 teacher.name = name
             if specialty:
                 teacher.specialty = specialty
-            print(f"Successfully changed teacher ID {id_} data.")
         elif type_ == "course":
             course = self.find_by_id(id_, search="course")
             if name:
                 course.name = name
             if instrument:
                 course.instrument = instrument
-            print(f"Successfully changed course ID {id_} data.")
         self._save_data()
+        return True
 
     def find_by_id(self, id_, search="student"):
         """Finds a student, teacher or course with the provided id. Default is student search.
@@ -341,3 +334,200 @@ class ScheduleManager:
             raise "Error: Search type invalid"
         return None
 
+    def student_to_df(self):
+        with open(file=self.file_path, mode="r") as file:
+            data = json.load(file)["students"]
+            df = pd.DataFrame(data)
+            return df
+
+    def register_student(self, name, course_id):
+        """High-level function to register a new student and enrol them."""
+        student = self.add_student(name)
+        # Enrols new student in provided instrument
+        enrol = self.enrol_student(student, course_id)
+        if not enrol:
+            self.remove_student(student)
+            return False
+        else:
+            return True
+
+    def school_lookup(self, term, search=None):
+        """High-level function to search everything."""
+        print(f"\n--- Performing lookup for '{term}' ---")
+        if search.lower() == "student":
+            self.find_students(term)
+        elif search.lower() == "teacher":
+            self.find_teachers(term)
+        elif search.lower() == "course":
+            self.find_courses(term)
+        else:
+            print("Error: Search type invalid.")
+
+    def get_student_details(self, student_id):
+        """Prints an existing students details"""
+        student = self.find_by_id(student_id)
+        if student:
+            print(student)
+            print("-" * 20)
+        else:
+            print(f"Error: Student ID {student_id} not found.")
+
+    def list_students(self):
+        """Prints all students in the database."""
+        if self.students:
+            print("\n--- Student List ---")
+            for student in self.students:
+                self.get_student_details(student.id)
+                print("-" * 20)
+        else:
+            print("Error: No students found in the system.")
+
+    def find_students(self, term):
+        """Finds students by name or id."""
+        try:
+            term = int(term)
+            id_search = True
+        except ValueError:
+            id_search = False
+        print(f"\n--- Finding students matching '{term}' ---")
+        # Searches student database for student with the id provided.
+        if id_search:
+            if self.find_by_id(term):
+                self.get_student_details(term)
+            else:
+                print(f"Student ID {term} not found.")
+        else:
+            # Filters the student database for students with names matching the search term.
+            result = [student for student in self.students if term.lower() in student.name.lower()]
+            for student in result:
+                self.get_student_details(student.id)
+            if not result:
+                print("No match found.")
+
+    def switch_course(self, student_id, from_course_id, to_course_id):
+        """Switches a students course from one to another"""
+        # Checks if both course ids provided are the same.
+        if from_course_id == to_course_id:
+            return False
+
+        old_course = self.disenroll_student(student_id, from_course_id)
+
+        # Makes sure the student disenrolled is successful before continuing.
+        if not old_course:
+            return False
+        new_course = self.enrol_student(student_id, to_course_id)
+        if new_course:
+            return True
+
+        # Returns student enrollment status to original if student enrollment is unsuccessful.
+        self.enrol_student(student_id, from_course_id)
+        return False
+
+    # Teacher Functions
+    def find_teachers(self, term):
+        """Finds teachers by name, specialty or id."""
+        try:
+            term = int(term)
+            id_search = True
+        except ValueError:
+            id_search = False
+        print(f"\n--- Finding teacher matching '{term}' ---")
+        # Searches teacher database for student with the id provided.
+        if id_search:
+            if self.find_by_id(term, search="teacher"):
+                self.get_teacher_details(term)
+            else:
+                print(f"Teacher ID {term} not found.")
+        else:
+            # Filters the teacher database for teachers with names or specialties matching the search term.
+            result = [teacher for teacher in self.teachers if
+                      term.lower() in teacher.name.lower() or term.lower() in teacher.specialty.lower()]
+            for teacher in result:
+                self.get_teacher_details(teacher.id)
+            if not result:
+                print("No match found.")
+
+    def get_teacher_details(self, teacher_id):
+        """Prints a teacher's details."""
+        teacher = self.find_by_id(teacher_id, search="teacher")
+        if teacher:
+            print(teacher)
+            print("-" * 20)
+        else:
+            print(f"Error: Teacher ID {teacher_id} not found.")
+
+    def list_teachers(self):
+        """Prints all teachers in the application data."""
+        if self.teachers:
+            print("\n--- Teacher List ---")
+            for teacher in self.teachers:
+                self.get_teacher_details(teacher.id)
+        else:
+            print("Error: No teachers found in the system.")
+
+    # Course Functions
+
+    def find_courses(self, term):
+        """Finds courses by name, specialty or id."""
+        try:
+            term = int(term)
+            id_search = True
+        except ValueError:
+            id_search = False
+        print(f"\n--- Finding course matching '{term}' ---")
+        # Searches system for course with the id provided.
+        if id_search:
+            if self.find_by_id(term, search="course"):
+                self.get_course_details(term)
+            else:
+                print(f"Teacher ID {term} not found.")
+        else:
+            # Filters the system for courses with names matching the term.
+            result = [course for course in self.courses if term.lower() in course.name.lower()]
+            for course in result:
+                self.get_course_details(course.id)
+            if not result:
+                print("No match found.")
+
+    def get_course_details(self, course_id):
+        """Prints a course's details."""
+        course = self.find_by_id(course_id, search="course")
+        if course:
+            print(course)
+            print("-" * 20)
+        else:
+            print(f"Error: Course ID {course_id} not found.")
+
+    def list_courses(self):
+        """Prints all courses in the system."""
+        if self.courses:
+            print("\n--- Course List ---")
+            for course in self.courses:
+                self.get_course_details(course.id)
+        else:
+            print("Error: No teachers found in the system.")
+
+    def get_lessons(self, course_id):
+        """Gets the lessons for a course"""
+        course = self.find_by_id(course_id, search="course")
+        if course:
+            course.get_lessons()
+        else:
+            print(f"Error: Course ID {course_id} not found.")
+
+    def front_desk_daily_roster(self, day):
+        """Displays a pretty table of all lessons on a given day."""
+        print(f"\n--- Daily Roster for {day} ---")
+        lessons_available = False
+        for course in self.courses:
+            for lesson in course.lessons:
+                if lesson["day"] == day:
+                    lessons_available = True
+                    teacher = self.find_by_id(course.teacher_id, search="teacher")
+                    print(f"Course: {course.name}"
+                          f"\nTeacher: {teacher.name}"
+                          f"\nStart Time: {lesson["start_time"]}"
+                          f"\nRoom: {lesson["room"]}")
+                    print("-" * 20)
+        if not lessons_available:
+            print(f"No lessons for {day}.")
