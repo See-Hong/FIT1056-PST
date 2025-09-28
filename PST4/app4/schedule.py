@@ -9,7 +9,7 @@ import pandas as pd
 
 class ScheduleManager:
 
-    def __init__(self, file_path="PST3/data/msms.json"):
+    def __init__(self, file_path="PST4/data/msms.json"):
         self.students = []
         self.teachers = []
         self.courses = []
@@ -150,6 +150,8 @@ class ScheduleManager:
         """Records a student's attendance for a course."""
         if not timestamp:
             timestamp = dt.datetime.now().isoformat()
+        elif isinstance(timestamp, dt.datetime):
+            timestamp = timestamp.isoformat()
         else:
             try:
                 timestamp = parser.parse(timestamp).isoformat()
@@ -170,9 +172,13 @@ class ScheduleManager:
                 "course_id": course.id,
                 "timestamp": timestamp
             }
+            if new_record in self.attendance_log:
+                print("Error: Duplicate record found")
+                return False
             self.attendance_log.append(new_record)
             self._save_data()
             print(f"Success: Student {student.name} checked into {course.name}")
+            return True
         return False
 
     def check_attendance(self, student_id, date=None):
@@ -515,19 +521,21 @@ class ScheduleManager:
         else:
             print(f"Error: Course ID {course_id} not found.")
 
-    def front_desk_daily_roster(self, day):
+    def daily_roster(self, day):
         """Displays a pretty table of all lessons on a given day."""
-        print(f"\n--- Daily Roster for {day} ---")
-        lessons_available = False
+        lessons = []
         for course in self.courses:
             for lesson in course.lessons:
                 if lesson["day"] == day:
-                    lessons_available = True
                     teacher = self.find_by_id(course.teacher_id, search="teacher")
-                    print(f"Course: {course.name}"
-                          f"\nTeacher: {teacher.name}"
-                          f"\nStart Time: {lesson["start_time"]}"
-                          f"\nRoom: {lesson["room"]}")
-                    print("-" * 20)
-        if not lessons_available:
-            print(f"No lessons for {day}.")
+                    sel_lesson = {
+                        "Course" : course.name,
+                        "Lesson id": lesson["lesson_id"],
+                        "Teacher" : teacher.name,
+                        "Time" : lesson["start_time"],
+                        "Room" : lesson["room"],
+                    }
+                    lessons.append(sel_lesson)
+        if lessons:
+            return lessons
+        return None
