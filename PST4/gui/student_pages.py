@@ -6,42 +6,41 @@ def student_management_page(manager):
     st.set_page_config(layout="wide", page_title="Student Management")
     st.header("Student Management")
 
+    # Data list
     students = [(student.id, student.name) for student in manager.students]
     courses = [(course.id, course.name) for course in manager.courses]
 
 
-    # --- Search Section ---
     search_function(manager)
 
-    # --- Registration Section ---
     register_function(manager, courses)
 
-    # --- Enrolling section ---
     enrollment_function(manager, students, courses)
 
-    # --- Update section ---
     student_update_function(manager, students)
 
-    # --- Attendance section ---
-
-
-    # --- Remove section ---
     remove_student_function(manager, students)
 
 def search_function(manager):
+    """Renders the student search function"""
     st.subheader("Find a Student")
     with st.container(border=True):
         text = st.text_input("Student Name or ID").strip()
         df = manager.student_to_df()
+        # Checks if the term is a name or ID
         if text.isdigit():
             df = df[df["id"] == int(text)]
         elif text:
             df = df[df["name"].str.contains(text, case=False)]
+        # Shows the students as a dataframe
         st.dataframe(df, hide_index=True)
 
 def register_function(manager, courses):
+    """Renders the student register function"""
     st.subheader("Register New Student")
     with st.form("registration_form"):
+
+        # Student register form
         reg_name = st.text_input("New Student Name").strip()
         reg_course = course_selectbox("Register Student", courses, key="register_course")
         submit = st.form_submit_button("Register Student", key="student_register")
@@ -51,24 +50,27 @@ def register_function(manager, courses):
                 course_id = reg_course[0]
                 new_student = manager.register_student(reg_name, course_id)
                 if new_student:
-                    st.success(f"Successfully registered {reg_name}!")
+                    st.success(f"Successfully registered {reg_name}")
                 else:
-                    st.error("Unable to register student, please try again.")
+                    st.error("Unable to register student. Please try again.")
             else:
                 st.warning("Please enter both a name and an instrument.")
 
 def enrollment_function(manager, students, courses):
-    st.subheader("Course Enrollment and Disenrollment")
+    """Renders the student enrollment management functions"""
+    st.subheader("Course Enrollment, Disenrollment and Switching")
     with st.container(border=True):
+        # Radio widget for picking function
         enrol_type = st.radio("Type", options=["Course Enrollment", "Course Disenrollment", "Switch Courses"])
 
         if enrol_type != "Switch Courses":
             with st.form("enrol_manager_form"):
+
+                # Form for enrollment and disenrollment
                 sel_student = student_selectbox("Student Name", students, "enrol_student")
-
                 sel_course = course_selectbox("Course", courses, "enrol_course")
-
                 submit = st.form_submit_button("Confirm", key="student_enrollment")
+
                 if submit:
                     if sel_student and sel_course:
                         student_id = sel_student[0]
@@ -87,10 +89,13 @@ def enrollment_function(manager, students, courses):
                         st.warning("Please select a student and a course")
         else:
             with st.form("course_switch_form"):
+
+                # Form for switching courses
                 sel_student = student_selectbox("Student Name", students, key="switch_student")
                 old_course = course_selectbox("Current Course", courses, key="switch_course")
                 new_course = course_selectbox("Course To Switch To", courses, key="switch_course_2")
                 submit = st.form_submit_button("Confirm")
+
                 if submit:
                     if sel_student and old_course and new_course:
                         switch = manager.switch_course(sel_student[0], from_course_id=old_course[0], to_course_id=new_course[0])
@@ -102,11 +107,16 @@ def enrollment_function(manager, students, courses):
                         st.warning("Please select all options.")
 
 def student_update_function(manager, students):
+    """Renders the student updating function"""
     st.subheader("Update student information")
     with st.container(border=True):
+
+        # Student selection box
         sel_student = student_selectbox("Student Name", students, key="update_student")
         if sel_student:
             with st.form("update_student_form"):
+
+                # Renders the update form with current information as placeholders
                 new_name = st.text_input("New Student Name",value=sel_student[1]).strip()
                 submit = st.form_submit_button("Save Changes", key="student_update")
                 if submit:
@@ -120,23 +130,32 @@ def student_update_function(manager, students):
                         st.warning("Student name must not be blank")
 
 def remove_student_function(manager, students):
+    """Renders the remove student function"""
     st.subheader("Remove a student")
     with st.container(border=True):
+
+        # Student selection box
         sel_student = student_selectbox("Student Name", students, key="remove_student")
         if sel_student:
+
+            # Shows the student information
             df = manager.student_to_df()
             st.dataframe(df[df["id"] == sel_student[0]], hide_index=True)
+
             with st.form("remove_student_form"):
                 submit = st.form_submit_button("Confirm", key="student_remove")
                 if submit:
-                    manager.remove_student(sel_student[0])
-                    st.success("Successfully removed student")
-                else:
-                    st.error("Unable to remove student. Please try again")
+                    remove = manager.remove_student(sel_student[0])
+                    if remove:
+                        st.success("Successfully removed student")
+                    else:
+                        st.error("Unable to remove student. Please try again")
 
-def student_selectbox(label, students, key):
+def student_selectbox(label, students, key, **kwargs):
+    """Selectbox helper function for students"""
     s_placeholder = "Select a student"
 
+    # Checks if there are students in the system.
     if students:
         options = [s_placeholder] + students
         disabled = False
@@ -144,17 +163,19 @@ def student_selectbox(label, students, key):
         options = ["No students available"]
         disabled = True
 
-    choice = st.selectbox(label, options=options, disabled=disabled, key=key, format_func=format_option)
+    choice = st.selectbox(label, options=options, disabled=disabled, key=key, format_func=format_option, **kwargs)
 
+    # Returns the picked choice if it's valid.
     if disabled or choice == s_placeholder:
         return None
     else:
         return choice
 
-def course_selectbox(label, courses, key):
-
+def course_selectbox(label, courses, key, **kwargs):
+    """Selectbox helper function for courses"""
     s_placeholder = "Select a course"
 
+    # Checks if there are courses in the system
     if courses:
         options = [s_placeholder] + courses
         disabled = False
@@ -162,14 +183,16 @@ def course_selectbox(label, courses, key):
         options = ["No students available"]
         disabled = True
 
-    choice = st.selectbox(label, options=options, disabled=disabled, key=key, format_func=format_option)
+    choice = st.selectbox(label, options=options, disabled=disabled, key=key, format_func=format_option, **kwargs)
 
+    # Returns the picked choice if it is valid.
     if disabled or choice == s_placeholder:
         return None
     else:
         return choice
 
 def format_option(c):
+    """Format the selectbox options"""
     if type(c) == tuple:
         return f"{c[0]} {c[1]}"
     else:

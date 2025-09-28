@@ -116,7 +116,8 @@ class ScheduleManager:
         if student:
             self.students.remove(student)
             for course in student.enrolled_courses:
-                course.remove(student.id)
+                sel_course = self.find_by_id(course, search="course")
+                sel_course.enrolled_students.remove(student.id)
             self._save_data()
             return True
         else:
@@ -231,6 +232,7 @@ class ScheduleManager:
         self.teachers.append(new_teacher)
         self.next_teacher_id += 1
         self._save_data()
+        return True
 
     def remove_teacher(self, teacher_id):
         """Removes an existing teacher from the system."""
@@ -239,8 +241,10 @@ class ScheduleManager:
             self.teachers.remove(teacher)
             print(f"Teacher ID {teacher_id} has been removed.")
             self._save_data()
+            return True
         else:
             print(f"Error: Teacher ID {teacher_id} not found.")
+            return False
 
 
     # Course Functions
@@ -258,8 +262,10 @@ class ScheduleManager:
             self.courses.append(new_course)
             self.next_course_id += 1
             self._save_data()
+            return True
         else:
             print(f"Error: Teacher ID {teacher_id} not found.")
+            return False
 
     def remove_course(self, course_id):
         """Removes an existing teacher from the system."""
@@ -268,8 +274,10 @@ class ScheduleManager:
             self.courses.remove(course)
             print(f"Course ID {course_id} has been removed.")
             self._save_data()
+            return True
         else:
             print(f"Error: Course ID {course_id} not found.")
+            return False
 
     def add_lesson(self, course_id, lesson_day, start_time, room):
         """Adds a new lesson to a course in the system."""
@@ -283,7 +291,10 @@ class ScheduleManager:
                 day = best_match[0]
             else:
                 print("Error: Lesson day invalid.")
-                return
+                return False
+
+        if isinstance(start_time, dt.time):
+            start_time = start_time.strftime("%H:%M")
         if course:
             new_lesson = {
                 "lesson_id": self.next_lesson_id,
@@ -294,14 +305,17 @@ class ScheduleManager:
             self.next_lesson_id += 1
             course.lessons.append(new_lesson)
             self._save_data()
+            return True
         else:
             print(f"Error: Course ID {course_id} not found.")
+            return False
 
     # Object data helper functions
     def update_information(self, id_, type_ = "student", **kwargs):
         name = kwargs.get("name")
         specialty = kwargs.get("specialty")
         instrument = kwargs.get("instrument")
+        teacher_id = kwargs.get("teacher_id")
         if type_ == "student":
             student = self.find_by_id(id_)
             if name:
@@ -318,6 +332,8 @@ class ScheduleManager:
                 course.name = name
             if instrument:
                 course.instrument = instrument
+            if teacher_id:
+                course.teacher_id = teacher_id
         self._save_data()
         return True
 
@@ -343,6 +359,26 @@ class ScheduleManager:
     def student_to_df(self):
         with open(file=self.file_path, mode="r") as file:
             data = json.load(file)["students"]
+            for student in data:
+                courses = []
+                for course in student["enrolled_courses"]:
+                    sel_course = self.find_by_id(course, search="course")
+                    courses.append(sel_course.name)
+                student["enrolled_courses"] = courses
+            df = pd.DataFrame(data)
+            return df
+
+    def course_to_df(self):
+        with open(file=self.file_path, mode="r") as file:
+            data = json.load(file)["courses"]
+            for course in data:
+                course.pop("lessons", None)
+            df = pd.DataFrame(data)
+            return df
+
+    def teacher_to_df(self):
+        with open(file=self.file_path, mode="r") as file:
+            data = json.load(file)["teachers"]
             df = pd.DataFrame(data)
             return df
 

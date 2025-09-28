@@ -94,24 +94,15 @@
                "enrolled_students": [
                     1
                ],
-               "lessons": []
+               "lessons": [
+                    {
+                         "lesson_id": 4,
+                         "day": "Friday",
+                         "start_time": "09:00",
+                         "room": "a"
+                    }
+               ]
           }
      ],
-     "attendance": [
-          {
-               "student_id": 1,
-               "course_id": 101,
-               "timestamp": "2025-07-14T15:58:30"
-          },
-          {
-               "student_id": 2,
-               "course_id": 102,
-               "timestamp": "2025-07-14T16:02:45"
-          },
-          {
-               "student_id": 4,
-               "course_id": 101,
-               "timestamp": "2025-09-28T17:26:00"
-          }
-     ]
+     "attendance": []
 }

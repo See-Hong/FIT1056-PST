@@ -1,9 +1,10 @@
 import streamlit as st
-# from app4.schedule import ScheduleManager
-import app4.schedule as schedule
+from app4.schedule import ScheduleManager
 from gui.student_pages import student_management_page
 from gui.overview import overview_page
 from gui.roster_pages import show_roster_page
+from gui.course_pages import course_management_page
+from gui.teacher_pages import teacher_management_page
 import importlib
 
 
@@ -12,10 +13,7 @@ def launch():
     st.set_page_config(layout="wide", page_title="Music School Management System")
 
     if 'manager' not in st.session_state:
-        st.session_state.manager = schedule.ScheduleManager()
-
-    importlib.reload(schedule)
-    st.session_state.manager = schedule.ScheduleManager()
+        st.session_state.manager = ScheduleManager()
 
     st.sidebar.title("MSMS Navigation")
 
@@ -30,9 +28,9 @@ def launch():
     elif page == "Daily Roster":
         show_roster_page(st.session_state.manager)
     elif page == "Course Management":
-        pass
+        course_management_page(st.session_state.manager)
     elif page == "Teacher Management":
-        pass
+        teacher_management_page(st.session_state.manager)
     elif page == "Payments (stub)":
         st.header("Payments")
         st.warning("This feature will be implemented in PST5.")

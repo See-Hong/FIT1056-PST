@@ -5,27 +5,28 @@ import datetime as dt
 
 
 def show_roster_page(manager):
-    """Renders the daily roster and check-in functionality."""
+    """Renders the daily roster and student attendance functionality."""
     st.set_page_config(layout="wide", page_title="Roster management")
     st.header("Daily Roster")
 
+    # Data list
     students = [(student.id, student.name) for student in manager.students]
     courses = [(course.id, course.name) for course in manager.courses]
 
-    # --- View Roster Section ---
     current_day_roster(manager)
 
-    # --- Student Check-in Section ---
     student_check_in(manager, students, courses)
 
-    # --- Student Attendance ---
     student_attendance(manager, students, courses)
 
 def current_day_roster(manager):
+    """Render the daily roster function."""
     with st.container(border=True):
+
         day = st.selectbox("Select a day", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"])
 
         if day:
+            # Finds the lessons for the day and shows them with a dataframe.
             lessons = manager.daily_roster(day)
             if lessons:
                 df = pd.DataFrame(lessons)
@@ -34,9 +35,11 @@ def current_day_roster(manager):
                 st.error("No lessons available for the day")
 
 def student_check_in(manager, students, courses):
+    """Renders the student check in function."""
     st.subheader("Student Check-in")
     with st.form("check_in_form"):
 
+        # Check in form
         sel_student = student_selectbox("Student Name", students, key="check_in_student")
         sel_course = course_selectbox("Course Name", courses, key="check_in_courses")
         sel_date = st.date_input("Check In Date", value="today", max_value="today", min_value=dt.date(2025, 1, 1))
@@ -45,7 +48,6 @@ def student_check_in(manager, students, courses):
         submit = st.form_submit_button("Check-in Student", key="check_in_submit")
 
         if submit:
-            st.text(sel_student)
             if sel_student and sel_course:
                 student_id = sel_student[0]
                 course_id = sel_course[0]
@@ -61,10 +63,15 @@ def student_check_in(manager, students, courses):
                 st.warning("Please select a student and course")
 
 def student_attendance(manager, students, courses):
+    """Renders the student attendance checker"""
     st.subheader("Check student attendance")
     with st.container(border=True):
+
+        # Student and course filter for attendance
         sel_student = student_selectbox("Student Name", students, key="student_attendance")
         sel_course = course_selectbox("Course Name", courses, key="attendance_course")
+
+        # Formats the attendance log from the manager and converts to dataframe.
         attendance_log = manager.attendance_log
         formatted_log = []
         for record in attendance_log:
@@ -78,6 +85,8 @@ def student_attendance(manager, students, courses):
                 }
             )
         df = pd.DataFrame(formatted_log)
+
+        # Filter condition checks
         if sel_student and not sel_course:
             df = df[df["student_id"] == sel_student[0]]
         elif sel_course and not sel_student:
@@ -89,9 +98,11 @@ def student_attendance(manager, students, courses):
         else:
             st.dataframe(df, hide_index=True)
 
-def student_selectbox(label, students, key):
+def student_selectbox(label, students, key, **kwargs):
+    """Selectbox helper function for students"""
     s_placeholder = "Select a student"
 
+    # Checks if there are students in the system.
     if students:
         options = [s_placeholder] + students
         disabled = False
@@ -99,16 +110,19 @@ def student_selectbox(label, students, key):
         options = ["No students available"]
         disabled = True
 
-    choice = st.selectbox(label, options=options, disabled=disabled, key=key, format_func=format_option)
+    choice = st.selectbox(label, options=options, disabled=disabled, key=key, format_func=format_option, **kwargs)
+
+    # Returns the picked choice if it's valid.
     if disabled or choice == s_placeholder:
         return None
     else:
         return choice
 
-def course_selectbox(label, courses, key):
-
+def course_selectbox(label, courses, key, **kwargs):
+    """Selectbox helper function for courses"""
     s_placeholder = "Select a course"
 
+    # Checks if there are courses in the system
     if courses:
         options = [s_placeholder] + courses
         disabled = False
@@ -116,14 +130,16 @@ def course_selectbox(label, courses, key):
         options = ["No students available"]
         disabled = True
 
-    choice = st.selectbox(label, options=options, disabled=disabled, key=key, format_func=format_option)
+    choice = st.selectbox(label, options=options, disabled=disabled, key=key, format_func=format_option, **kwargs)
 
+    # Returns the picked choice if it is valid.
     if disabled or choice == s_placeholder:
         return None
     else:
         return choice
 
 def format_option(c):
+    """Format the selectbox options"""
     if type(c) == tuple:
         return f"{c[0]} {c[1]}"
     else:
