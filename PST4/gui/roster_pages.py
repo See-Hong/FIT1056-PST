@@ -73,30 +73,33 @@ def student_attendance(manager, students, courses):
 
         # Formats the attendance log from the manager and converts to dataframe.
         attendance_log = manager.attendance_log
-        formatted_log = []
-        for record in attendance_log:
-            course = manager.find_by_id(record["course_id"], search="course")
-            formatted_log.append(
-                {
-                    "student_id": record["student_id"],
-                    "course_id": record["course_id"],
-                    "course": course.name,
-                    "timestamp": pd.to_datetime(record["timestamp"].replace("T", " ")),
-                }
-            )
-        df = pd.DataFrame(formatted_log)
+        if attendance_log:
+            formatted_log = []
+            for record in attendance_log:
+                course = manager.find_by_id(record["course_id"], search="course")
+                formatted_log.append(
+                    {
+                        "student_id": record["student_id"],
+                        "course_id": record["course_id"],
+                        "course": course.name,
+                        "timestamp": pd.to_datetime(record["timestamp"].replace("T", " ")),
+                    }
+                )
+            df = pd.DataFrame(formatted_log)
 
-        # Filter condition checks
-        if sel_student and not sel_course:
-            df = df[df["student_id"] == sel_student[0]]
-        elif sel_course and not sel_student:
-            df = df[df["course_id"] == sel_course[0]]
-        elif sel_student and sel_course:
-            df = df[(df["student_id"] == sel_student[0]) & (df["course_id"] == sel_course[0])]
-        if df.empty:
-            st.error("No matching attendance records found")
+            # Filter condition checks
+            if sel_student and not sel_course:
+                df = df[df["student_id"] == sel_student[0]]
+            elif sel_course and not sel_student:
+                df = df[df["course_id"] == sel_course[0]]
+            elif sel_student and sel_course:
+                df = df[(df["student_id"] == sel_student[0]) & (df["course_id"] == sel_course[0])]
+            if df.empty:
+                st.error("No matching attendance records found")
+            else:
+                st.dataframe(df, hide_index=True)
         else:
-            st.dataframe(df, hide_index=True)
+            st.error("No attendance records in system.")
 
 def student_selectbox(label, students, key, **kwargs):
     """Selectbox helper function for students"""
