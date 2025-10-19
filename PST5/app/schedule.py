@@ -6,6 +6,7 @@ from dateutil import parser
 import difflib
 import pandas as pd
 import csv
+import logging
 
 
 class ScheduleManager:
@@ -121,6 +122,7 @@ class ScheduleManager:
         )
         self.students.append(new_student)
         print(f"New student ID {self.next_student_id} created.")
+        logging.info(f"New student with ID {self.next_student_id} created.")
         self.next_student_id += 1
         self._save_data()
         return new_student.id
@@ -135,6 +137,7 @@ class ScheduleManager:
                 sel_course.enrolled_students.remove(student.id)
             self._save_data()
             print(f"Student ID {student_id} removed.")
+            logging.info(f"Student with ID {student_id} removed.")
             return True
         else:
             print(f"Student ID {student_id} not found.")
@@ -297,6 +300,8 @@ class ScheduleManager:
             specialty = specialty
         )
         self.teachers.append(new_teacher)
+        print(f"Teacher ID {self.next_teacher_id} created.")
+        logging.info(f"Teacher with ID {self.next_teacher_id} created.")
         self.next_teacher_id += 1
         self._save_data()
         return True
@@ -307,6 +312,7 @@ class ScheduleManager:
         if teacher:
             self.teachers.remove(teacher)
             print(f"Teacher ID {teacher_id} has been removed.")
+            logging.info(f"Teacher with ID {teacher_id} removed.")
             self._save_data()
             return True
         else:
@@ -368,6 +374,7 @@ class ScheduleManager:
             )
             self.courses.append(new_course)
             print(f"Course ID {self.next_course_id} added.")
+            logging.info(f"Course with ID {self.next_course_id} created.")
             self.next_course_id += 1
             self._save_data()
             return True
@@ -381,6 +388,7 @@ class ScheduleManager:
         if course:
             self.courses.remove(course)
             print(f"Course ID {course_id} has been removed.")
+            logging.info(f"Course with ID {course_id} removed.")
             self._save_data()
             return True
         else:
@@ -503,6 +511,7 @@ class ScheduleManager:
             self.finance_log.append(payment_record)
             self._save_data()
             print(f"Payment of {amount} for student {student_id} recorded.")
+            logging.info(f"Payment by student ID {student_id} of {amount}.")
             return True
         else:
             print("Student not found.")
@@ -530,8 +539,6 @@ class ScheduleManager:
             writer.writerows(data_to_export)
             print("Report generated.")
             return True
-
-
 
     # Object data helper functions
 
