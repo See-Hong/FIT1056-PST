@@ -118,13 +118,5 @@
                "course_id": 101,
                "timestamp": "2025-10-08T19:40:00"
           }
-     ],
-     "finances": [
-          {
-               "student_id": 1,
-               "amount": 100.0,
-               "method": "Cash",
-               "timestamp": "2025-10-19T15:27:05.104558"
-          }
      ]
 }
