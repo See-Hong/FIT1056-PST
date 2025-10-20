@@ -110,6 +110,21 @@
                          "room": "a"
                     }
                ]
+          },
+          {
+               "id": 104,
+               "name": "Testing Course",
+               "instrument": "Guitar",
+               "teacher_id": 3,
+               "enrolled_students": [],
+               "lessons": [
+                    {
+                         "lesson_id": 5,
+                         "day": "Monday",
+                         "start_time": "12:09",
+                         "room": "TOM"
+                    }
+               ]
           }
      ],
      "attendance": [

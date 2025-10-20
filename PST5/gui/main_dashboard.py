@@ -6,6 +6,7 @@ from gui.roster_pages import show_roster_page
 from gui.course_pages import course_management_page
 from gui.teacher_pages import teacher_management_page
 from gui.finance_pages import show_finance_page
+from utils.utils import *
 
 
 def launch():
@@ -15,24 +16,40 @@ def launch():
     if 'manager' not in st.session_state:
         st.session_state.manager = ScheduleManager()
 
-    st.sidebar.title("MSMS Navigation")
+    if 'first_run' not in st.session_state:
+        st.session_state.first_run = True
+        st.session_state.logged_in = False
+        st.session_state.user = None
+        st.session_state.active_page = "Home"
 
-    # Create a radio button menu in the sidebar for page navigation.
-    page = st.sidebar.radio("Go to", ["Home", "Student Management", "Daily Roster", "Course Management", "Teacher Management", "Payments"])
+    pages = [("Home", overview_page),
+             ("Student Management", student_management_page),
+             ("Daily Roster", show_roster_page),
+             ("Course Management", course_management_page),
+             ("Teacher Management", teacher_management_page),
+             ("Payments", show_finance_page)]
 
-    # Use an if/elif block to call the correct function to render the selected page.
-    if page == "Home":
-        overview_page(st.session_state.manager)
-    elif page == "Student Management":
-        student_management_page(st.session_state.manager)
-    elif page == "Daily Roster":
-        show_roster_page(st.session_state.manager)
-    elif page == "Course Management":
-        course_management_page(st.session_state.manager)
-    elif page == "Teacher Management":
-        teacher_management_page(st.session_state.manager)
-    elif page == "Payments":
-        show_finance_page(st.session_state.manager)
+    def switch_page(name):
+        """Function for highlighting current page"""
+        st.session_state.active_page = name
+    # Sidebar navigation
+    st.sidebar.title("Music School Management System")
+    st.sidebar.divider()
+    for page in pages:
+        button_type = "primary" if page[0] == st.session_state.active_page else "secondary"
+        st.sidebar.button(page[0], type=button_type, width="stretch", on_click=switch_page, args=[page[0]], key=f"page-{page[0]}")
+    st.sidebar.divider()
 
+    for page in pages:
+        if st.session_state.active_page == page[0]:
+            page[1](st.session_state.manager)
 
+    # Login
+    if not st.session_state.logged_in:
+        st.sidebar.button("Sign in/Sign up", on_click=signing_in, key="signing_in")
+    else:
+        with st.sidebar.container():
+            if st.session_state.user:
+                st.write(f"Hello {st.session_state.user["username"]}!")
+                st.button("Log Out", type="primary", width="stretch", on_click=log_out)
 

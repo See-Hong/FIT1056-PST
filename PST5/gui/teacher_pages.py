@@ -16,11 +16,12 @@ def teacher_management_page(manager):
 
     search_function(manager)
 
-    add_teacher_function(manager, specialty)
+    if st.session_state.logged_in:
+        add_teacher_function(manager, specialty)
 
-    teacher_update_function(manager, teachers, specialty)
+        teacher_update_function(manager, teachers, specialty)
 
-    remove_teacher_function(manager, teachers)
+        remove_teacher_function(manager, teachers)
 
 def search_function(manager):
     """Renders the teacher search function"""

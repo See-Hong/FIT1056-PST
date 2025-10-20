@@ -13,13 +13,14 @@ def student_management_page(manager):
 
     search_function(manager)
 
-    register_function(manager, courses)
+    if st.session_state.logged_in:
+        register_function(manager, courses)
 
-    enrollment_function(manager, students, courses)
+        enrollment_function(manager, students, courses)
 
-    student_update_function(manager, students)
+        student_update_function(manager, students)
 
-    remove_student_function(manager, students)
+        remove_student_function(manager, students)
 
 def search_function(manager):
     """Renders the student search function"""

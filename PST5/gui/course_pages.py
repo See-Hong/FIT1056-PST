@@ -16,15 +16,15 @@ def course_management_page(manager):
 
     search_function(manager)
 
-    add_course_function(manager, teachers, instruments)
-
-    course_update_function(manager, courses, instruments, teachers)
-
-    remove_course_function(manager, courses)
+    if st.session_state.logged_in:
+        add_course_function(manager, teachers, instruments)
+        course_update_function(manager, courses, instruments, teachers)
+        remove_course_function(manager, courses)
 
     lessons_search_function(manager, courses)
 
-    add_lesson_function(manager, courses)
+    if st.session_state.logged_in:
+        add_lesson_function(manager, courses)
 
 def search_function(manager):
     """Renders the course search function"""
@@ -124,12 +124,15 @@ def lessons_search_function(manager, courses):
         sel_course = course_selectbox("Course Name", courses, key="lesson_course")
         if sel_course:
             course = manager.find_by_id(sel_course[0], search="course")
-            lessons = [lesson for lesson in course.lessons]
-            df = pd.DataFrame(lessons)
-            if df.empty:
-                st.error("No lessons found for this course")
+            if course:
+                lessons = [lesson for lesson in course.lessons]
+                df = pd.DataFrame(lessons)
+                if df.empty:
+                    st.error("No lessons found for this course")
+                else:
+                    st.dataframe(df)
             else:
-                st.dataframe(df)
+                st.error("Course not found.")
 
 def add_lesson_function(manager, courses):
     """Renders the add lesson function"""

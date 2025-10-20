@@ -7,6 +7,7 @@ import difflib
 import pandas as pd
 import csv
 import logging
+import re
 
 
 class ScheduleManager:
@@ -35,6 +36,13 @@ class ScheduleManager:
         except (FileNotFoundError, json.JSONDecodeError):
             with open(file=self.file_path, mode="w") as file:
                 print("No data found. Creating new data file.")
+                data = {
+            "students": [],
+            "teachers": [],
+            "courses": [],
+            "attendance": [],
+            "finances": [],
+        }
 
     def _save_data(self):
         app_data = {
@@ -75,9 +83,8 @@ class ScheduleManager:
                     all_lessons.append(lesson)
             else:
                 all_lessons.append(element)
-        self.next_lesson_id = data.get("next_lesson_id") or (
-                    max(lesson["lesson_id"] for lesson in all_lessons) + 1) if all_lessons else 1
-        self.next_lesson_id = max(record["id"] for record in self.finance_log) + 1 if self.finance_log else 1
+        self.next_lesson_id = data.get("next_lesson_id") or (max(lesson["lesson_id"] for lesson in all_lessons) + 1) if all_lessons else 1
+        self.next_finance_id = max(record["id"] for record in self.finance_log) + 1 if self.finance_log else 1
 
     def load_students(self, data):
         """Initializes student objects with the given data."""
@@ -116,16 +123,21 @@ class ScheduleManager:
 
     def add_student(self, name):
         """Adds a student to the system."""
-        new_student = StudentUser(
-            name = name,
-            student_id = self.next_student_id,
-        )
-        self.students.append(new_student)
-        print(f"New student ID {self.next_student_id} created.")
-        logging.info(f"New student with ID {self.next_student_id} created.")
-        self.next_student_id += 1
-        self._save_data()
-        return new_student.id
+        name_pattern = r'^[A-Za-z]+(?: [A-Za-z]+)*$'
+        if re.match(name_pattern, name.strip()):
+            new_student = StudentUser(
+                name = name.strip(),
+                student_id = self.next_student_id,
+            )
+            self.students.append(new_student)
+            print(f"New student ID {self.next_student_id} created.")
+            logging.info(f"New student with ID {self.next_student_id} created.")
+            self.next_student_id += 1
+            self._save_data()
+            return new_student.id
+        else:
+            print("Student name must not be blank, and must only have letters.")
+            return False
 
     def remove_student(self, student_id):
         """Removes a student from the system."""
@@ -134,7 +146,8 @@ class ScheduleManager:
             self.students.remove(student)
             for course in student.enrolled_courses:
                 sel_course = self.find_by_id(course, search="course")
-                sel_course.enrolled_students.remove(student.id)
+                if sel_course:
+                    sel_course.enrolled_students.remove(student.id)
             self._save_data()
             print(f"Student ID {student_id} removed.")
             logging.info(f"Student with ID {student_id} removed.")
@@ -175,7 +188,7 @@ class ScheduleManager:
         print(f"Student ID {student_id} not enrolled in course ID {course_id}.")
         return False
 
-    def check_in(self, student_id, course_id, timestamp):
+    def check_in(self, student_id, course_id, timestamp=None):
         """Records a student's attendance for a course."""
         if not timestamp:
             timestamp = dt.datetime.now().isoformat()
@@ -294,23 +307,36 @@ class ScheduleManager:
 
     def add_teacher(self, name, specialty):
         """Adds a teacher to the system."""
-        new_teacher = TeacherUser(
-            name = name,
-            teacher_id = self.next_teacher_id,
-            specialty = specialty
-        )
-        self.teachers.append(new_teacher)
-        print(f"Teacher ID {self.next_teacher_id} created.")
-        logging.info(f"Teacher with ID {self.next_teacher_id} created.")
-        self.next_teacher_id += 1
-        self._save_data()
-        return True
+        name_pattern = r'^[A-Za-z]+(?: [A-Za-z]+)*$'
+        print(name)
+        if re.match(name_pattern, name):
+            if specialty.strip() and any(s.isalpha() for s in specialty):
+                new_teacher = TeacherUser(
+                    name = name.strip(),
+                    teacher_id = self.next_teacher_id,
+                    specialty = specialty.strip()
+                )
+                self.teachers.append(new_teacher)
+                print(f"Teacher ID {self.next_teacher_id} created.")
+                logging.info(f"Teacher with ID {self.next_teacher_id} created.")
+                self.next_teacher_id += 1
+                self._save_data()
+                return new_teacher.id
+            else:
+                print("Specialty must not be blank.")
+                return False
+        else:
+            print("Name must not be blank, and must only have letters.")
+            return False
 
     def remove_teacher(self, teacher_id):
         """Removes an existing teacher from the system."""
         teacher = self.find_by_id(teacher_id, search="teacher")
         if teacher:
             self.teachers.remove(teacher)
+            for course in self.courses:
+                if course.teacher_id == teacher_id:
+                    course.teacher_id = None
             print(f"Teacher ID {teacher_id} has been removed.")
             logging.info(f"Teacher with ID {teacher_id} removed.")
             self._save_data()
@@ -366,18 +392,27 @@ class ScheduleManager:
         """Adds a course to the system."""
         teacher = self.find_by_id(teacher_id, search="teacher")
         if teacher:
-            new_course = Course(
-                name=name,
-                course_id=self.next_course_id,
-                instrument=instrument,
-                teacher_id=teacher_id,
-            )
-            self.courses.append(new_course)
-            print(f"Course ID {self.next_course_id} added.")
-            logging.info(f"Course with ID {self.next_course_id} created.")
-            self.next_course_id += 1
-            self._save_data()
-            return True
+            name_pattern = r"^[A-Za-z]+(?:[ '-.,][A-Za-z]+)*$"
+            if re.match(name_pattern, name):
+                if instrument.strip() and any(s.isalpha() for s in instrument):
+                    new_course = Course(
+                        name=name.strip(),
+                        course_id=self.next_course_id,
+                        instrument=instrument.strip(),
+                        teacher_id=teacher_id,
+                    )
+                    self.courses.append(new_course)
+                    print(f"Course ID {self.next_course_id} added.")
+                    logging.info(f"Course with ID {self.next_course_id} created.")
+                    self.next_course_id += 1
+                    self._save_data()
+                    return new_course.id
+                else:
+                    print("Course instrument must not be blank, and must contain letters.")
+                    return False
+            else:
+                print("Course name must not be blank, and must contain letters.")
+                return False
         else:
             print(f"Teacher ID {teacher_id} not found.")
             return False
@@ -387,6 +422,9 @@ class ScheduleManager:
         course = self.find_by_id(course_id, search="course")
         if course:
             self.courses.remove(course)
+            for student in self.students:
+                if course_id in student.enrolled_courses:
+                    student.enrolled_courses.remove(course_id)
             print(f"Course ID {course_id} has been removed.")
             logging.info(f"Course with ID {course_id} removed.")
             self._save_data()
@@ -406,23 +444,34 @@ class ScheduleManager:
             if best_match:
                 day = best_match[0]
             else:
-                print("Error: Lesson day invalid.")
+                print("Lesson day invalid.")
                 return False
 
         if isinstance(start_time, dt.time):
             start_time = start_time.strftime("%H:%M")
+        else:
+            try:
+                time = parser.parse(start_time).strftime("%H:%M")
+            except ValueError:
+                print("Invalid lesson time")
+                return False
+
         if course:
-            new_lesson = {
-                "lesson_id": self.next_lesson_id,
-                "day": day,
-                "start_time": start_time,
-                "room": room,
-            }
-            self.next_lesson_id += 1
-            course.lessons.append(new_lesson)
-            self._save_data()
-            print("Lesson added to course.")
-            return True
+            if room.strip():
+                new_lesson = {
+                    "lesson_id": self.next_lesson_id,
+                    "day": day,
+                    "start_time": start_time,
+                    "room": room.strip(),
+                }
+                self.next_lesson_id += 1
+                course.lessons.append(new_lesson)
+                self._save_data()
+                print("Lesson added to course.")
+                return new_lesson["lesson_id"]
+            else:
+                print("Lesson room must not be blank.")
+                return False
         else:
             print(f"Course ID {course_id} not found.")
             return False
@@ -478,14 +527,25 @@ class ScheduleManager:
     def daily_roster(self, day):
         """Displays a pretty table of all lessons on a given day."""
         lessons = []
+        day_list = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        try:
+            day = parser.parse(day, fuzzy=True).strftime("%A")
+        except ValueError:
+            print("Invalid day")
+            return False
         for course in self.courses:
             for lesson in course.lessons:
                 if lesson["day"] == day:
                     teacher = self.find_by_id(course.teacher_id, search="teacher")
+                    if teacher:
+                        teacher_name = teacher.name
+                    else:
+                        teacher_name = "NO TEACHER"
+
                     sel_lesson = {
                         "Course" : course.name,
                         "Lesson id": lesson["lesson_id"],
-                        "Teacher" : teacher.name,
+                        "Teacher" : teacher_name,
                         "Time" : lesson["start_time"],
                         "Room" : lesson["room"],
                     }
@@ -500,19 +560,29 @@ class ScheduleManager:
         """Adds a payment record to the finance log."""
         student = self.find_by_id(student_id, search="student")
         if student:
-            # Create a payment dictionary with student_id, amount, method, and a timestamp.
+            try:
+                amount = float(amount)
+                if amount < 0.01:
+                    raise ValueError
+            except ValueError:
+                print("Invalid amount. Amount must be above 0.01.")
+                return False
+            if not method.strip():
+                method = "NONE"
             payment_record = {
+                "id": self.next_finance_id,
                 "student_id": student_id,
                 "amount": amount,
-                "method": method,
+                "method": method.strip(),
                 "timestamp": dt.datetime.now().isoformat()
             }
-            # TODO: Append the record to self.finance_log and save the data.
             self.finance_log.append(payment_record)
+            self.next_finance_id += 1
             self._save_data()
             print(f"Payment of {amount} for student {student_id} recorded.")
             logging.info(f"Payment by student ID {student_id} of {amount}.")
-            return True
+            return payment_record["id"]
+
         else:
             print("Student not found.")
             return False
@@ -521,7 +591,7 @@ class ScheduleManager:
         """Returns a list of all payments for a given student."""
         return [p for p in self.finance_log if p['student_id'] == student_id]
 
-    def export_report(self, kind, out_path="PST5/assets"):
+    def export_report(self, kind, out_path="PST5/assets/report.csv"):
         """Exports a log to a CSV file."""
         print(f"Exporting {kind} report to {out_path}...")
         if kind == "finance":
@@ -533,12 +603,12 @@ class ScheduleManager:
         else:
             print("Error: Unknown report type.")
             return False
-        with open(f"{out_path}/{kind}_report.csv", "w") as file:
+        with open(out_path, "w") as file:
             writer = csv.DictWriter(file, fieldnames=headers)
             writer.writeheader()
             writer.writerows(data_to_export)
             print("Report generated.")
-            return True
+            return out_path
 
     # Object data helper functions
 
@@ -597,7 +667,7 @@ class ScheduleManager:
                 if course.id == id_:
                     return course
         else:
-            raise "Error: Search type invalid"
+            raise f"{Exception} Error: Search type invalid"
         return None
 
     # High level functions

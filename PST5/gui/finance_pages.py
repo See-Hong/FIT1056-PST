@@ -10,7 +10,8 @@ def show_finance_page(manager):
 
     students = [(student.id, student.name) for student in manager.students]
 
-    record_payment(manager, students)
+    if st.session_state.logged_in:
+        record_payment(manager, students)
 
     view_history(manager, students)
 

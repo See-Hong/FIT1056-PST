@@ -16,7 +16,8 @@ def show_roster_page(manager):
 
     current_day_roster(manager)
 
-    student_check_in(manager, students, courses)
+    if st.session_state.logged_in:
+        student_check_in(manager, students, courses)
 
     student_attendance(manager, students, courses)
 

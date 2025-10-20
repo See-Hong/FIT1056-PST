@@ -1,0 +1,9 @@
+{
+   "users": [
+      {
+         "username": "Hello",
+         "email": "seehong620@gmail.com",
+         "password": "scrypt:32768:8:1$3Gi1o0PiPj9cSPqn$bbed1ad67c673df443e374d3e56f04b05725a86a4401f58963d43c0b11f110cf1fc38c8213a43a9cc0f07a84e608e32a823181a48d4bb1e6d269cccb7f0991ff"
+      }
+   ]
+}
