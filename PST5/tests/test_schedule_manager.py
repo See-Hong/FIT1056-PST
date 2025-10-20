@@ -13,7 +13,7 @@ from app.schedule import ScheduleManager
 @pytest.fixture
 def fresh_manager():
     """Creates a fresh ScheduleManager instance using a temporary test data file."""
-    test_file = "test_data.json"
+    test_file = "PST5/tests/test_data.json"
     if os.path.exists(test_file):
         os.remove(test_file)
     return ScheduleManager(file_path=test_file)
