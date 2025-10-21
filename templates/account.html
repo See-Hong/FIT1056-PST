@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from 'bootstrap4/form.html' import render_form %}
+
+{% block title %}
+{% if type == "register" %}
+Account Registration
+{% else %}
+Account Login
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<main class="mb-4">
+    <div class="container">
+        <div class="row">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show mt-3 col-lg-8 col-md-10 mx-auto" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            <div class="col-lg-8 col-md-10 mx-auto pt-5">
+                {{render_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

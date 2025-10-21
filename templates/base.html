@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock %}</title>
+    {{ bootstrap.load_css()}}
+    <style>
+        #myCarousel {
+          height: 600px;
+        }
+        #myCarousel .carousel-item,
+        #myCarousel .carousel-item svg {
+          height: 600px;
+        }
+    </style>
+    {% block style %}
+    {% endblock %}
+</head>
+<body>
+<div class="container-fluid" style="background-color:black;">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-5 border-secondary-subtle">
+        <div class="col-md-3 mb-2 mb-md-0"><a href="/" class="d-inline-flex link-body-emphasis text-decoration-none">
+            {% if current_user.is_authenticated %}
+            <h3 style="color:white"> Hello there, {{ current_user.username }}! </h3>
+            {% endif %}
+        </a></div>
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            <li><a href="{{ url_for('home') }}" class="nav-link px-2 link-secondary">Home</a></li>
+            <li><a href="{{ url_for('appointment') }}" class="nav-link px-2">Appointments</a></li>
+            <li><a href="{{ url_for('profile') }}" class="nav-link px-2">Profile</a></li>
+            <li><a href="{{ url_for('contact') }}" class="nav-link px-2">Feedback</a></li>
+        </ul>
+        <div class="col-md-3 text-end">
+            {% if current_user.is_authenticated %}
+            {% if current_user.role_level == 4 %}
+            <a href="{{ url_for('admin') }}" class="btn btn-outline-primary me-2">Admin Panel</a>
+            {% endif %}
+            {% if current_user.role_level > 0 %}
+            <a href="{{ url_for('staff') }}" class="btn btn-outline-primary me-2">Staff Page</a>
+            {% endif %}
+            <form action="{{ url_for('logout') }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger me-2">Logout</button>
+            </form>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary me-2">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up</a>
+            {% endif %}
+        </div>
+    </header>
+</div>
+{% block content %}
+{% endblock %}
+
+{{ bootstrap.load_js() }}
+
+</body>
+</html>
+
