@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from 'bootstrap4/form.html' import render_form %}
+{% from 'bootstrap4/table.html' import render_table %}
+
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center vh-50">
+    <div class="card shadow p-4 v-50 w-75" style="width: 400px;">
+        <h3 class="text-center mb-3">Patients</h3>
+        <div class="container text-center">
+            <form method="POST">
+            <div class="row align-items-start">
+                {{ form.hidden_tag() }}
+                <div class="col-8 text-start">
+                    {{ form.search.label(class="form-label") }}
+                    {{ form.search(class="form-control me-2", placeholder="Search for a patient") }}
+                </div>
+                <div class="col-1">
+                    {{ form.min_age.label(class="form-label") }}
+                    {{ form.min_age(class="form-control me-2") }}
+                    |
+                    {{ form.max_age(class="form-control me-2") }}
+                </div>
+                <div class="col-1">
+                    {{ form.gender.label(class="form-label") }}
+                    {{ form.gender(class="form-control me-2") }}
+                </div>
+                <div class="col-1">
+                    {{ form.risk_level.label(class="form-label") }}
+                    {{ form.risk_level(class="form-control me-2") }}
+                </div>
+                <div class="col-1">
+                    {{ form.submit.label(class="form-label", style="visibility: hidden") }}
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </div>
+                </form>
+        </div>
+        {{ render_table(patient_list, titles=titles, safe_columns=("profile")) }}
+
+
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const minField = document.getElementById("min_age");
+  const maxField = document.getElementById("max_age");
+
+  function adjustMaxIfNeeded() {
+    const minVal = parseInt(minField.value);
+    const maxVal = parseInt(maxField.value);
+
+    if (!isNaN(minVal) && !isNaN(maxVal) && maxVal < minVal) {
+      maxField.value = minVal;
+    }
+  }
+
+  function ageInputLimit() {
+    const minVal = parseInt(minField.value);
+    const maxVal = parseInt(maxField.value);
+
+    if (!isNaN(minVal) && minVal < 0) {
+      minField.value = 0;
+    }
+
+    if (!isNaN(maxVal) && maxVal > 120) {
+     maxField.value = 120;
+  }
+  }
+  minField.addEventListener("input", adjustMaxIfNeeded);
+  maxField.addEventListener("input", adjustMaxIfNeeded);
+  minField.addEventListener("input", ageInputLimit);
+  maxField.addEventListener("input", ageInputLimit);
+});
+</script>
+{% endblock %}

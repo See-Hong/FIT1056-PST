@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock %}</title>
+    {{ bootstrap.load_css()}}
+    <style>
+        #myCarousel {
+          height: 600px;
+        }
+        #myCarousel .carousel-item,
+        #myCarousel .carousel-item svg {
+          height: 600px;
+        }
+    </style>
+    {{ bootstrap.load_js() }}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {% block style %}
+    {% endblock %}
+</head>
+<body>
+<div class="container-fluid" style="background-color:black;">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-5 border-secondary-subtle">
+        <div class="col-md-3 mb-2 mb-md-0">
+            <a href="/" class="d-inline-flex link-body-emphasis text-decoration-none">
+                <img src="static/assets/home_image.svg" style="width:2em">
+                <span class="fw-bold nav-link px-2 pt-1" style="color:white">Moonway Medical</span>
+            </a>
+        </div>
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            {% if not current_user.is_authenticated %}
+            <li><a href="{{ url_for('about') }}" class="nav-link px-2">About</a></li>
+            <li><a href="{{ url_for('contact') }}" class="nav-link px-2">Contact</a></li>
+            {% elif current_user.role_level == 0 %}
+            <li><a href="{{ url_for('about') }}" class="nav-link px-2">About</a></li>
+            <li><a href="{{ url_for('contact') }}" class="nav-link px-2">Contact</a></li>
+            <li><a href="{{ url_for('appointment') }}" class="nav-link px-2">Appointments</a></li>
+            {% elif current_user.role_level == 1 %}
+            <li><a href="{{ url_for('patient_page') }}" class="nav-link px-2">Patients</a></li>
+            <li><a href="{{ url_for('appointment') }}" class="nav-link px-2">Appointments</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link px-2">Reports</a></li>
+            {% elif current_user.role_level in [2,3] %}
+            <li><a href="{{ url_for('patient_page') }}" class="nav-link px-2">Patients</a></li>
+            <li><a href="{{ url_for('appointment') }}" class="nav-link px-2">Appointments</a></li>
+            <li><a href="{{ url_for('risk_dashboard') }}" class="nav-link px-2">Risk Dashboard</a></li>
+            <li><a href="{{ url_for('alert_and_notes') }}" class="nav-link px-2">Alerts / Notes</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link px-2">Reports</a></li>
+            {% elif current_user.role_level == 4 %}
+            <li><a href="{{ url_for('manage_patients') }}" class="nav-link px-2">Manage Staff</a></li>
+            <li><a href="{{ url_for('manage_staff') }}" class="nav-link px-2">Manage Patients</a></li>
+            <li><a href="{{ url_for('reports') }}" class="nav-link px-2">Reports</a></li>
+            <li><a href="{{ url_for('appointment') }}" class="nav-link px-2">System Logs / Audit</a></li>
+            {% endif %}
+
+            {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('profile') }}" class="nav-link px-2">Profile</a></li>
+            {% endif %}
+        </ul>
+        <div class="col-md-3 text-end">
+            {% if current_user.is_authenticated %}
+            <form action="{{ url_for('logout') }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-danger me-2">Logout</button>
+            </form>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary me-2">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up</a>
+            {% endif %}
+        </div>
+    </header>
+</div>
+{% block content %}
+{% endblock %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<script>
+    Swal.fire({
+      icon: '{{ category }}',
+      text: '{{ message }}'
+    })
+</script>
+{% endfor %}
+{% endif %}
+{% endwith %}
+</body>
+</html>

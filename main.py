@@ -1,4 +1,5 @@
 from datetime import date, time
+import datetime as dt
 from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
@@ -7,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean, Date, Text, Time
 from flask_sqlalchemy import SQLAlchemy
-from forms import RegisterForm, LoginForm, ContactForm, PatientProfileForm
+from forms import RegisterForm, LoginForm, FeedbackForm, PatientProfileForm, SearchPatientForm, EditProfileForm, PasswordChangeForm, CreateAppointmentForm
 from functools import wraps
 from enum import IntEnum
 
@@ -36,6 +37,9 @@ class User(UserMixin, db.Model):
     username: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
+    gender: Mapped[str] = mapped_column(String)
+    dob: Mapped[date] = mapped_column(Date)
+    contact: Mapped[str] = mapped_column(String)
     role_level: Mapped[int] = mapped_column(Integer, nullable=False)
     patient_profile = relationship("PatientProfile", back_populates="patient", uselist=False)
     appointments = relationship("Appointment", primaryjoin="or_(User.id==Appointment.doctor_id,"
@@ -44,13 +48,12 @@ class User(UserMixin, db.Model):
 class PatientProfile(db.Model):
     __tablename__ = "patients"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    gender: Mapped[str] = mapped_column(String)
-    dob: Mapped[date] = mapped_column(Date)
-    cultural: Mapped[str] = mapped_column(Text)
-    dietary: Mapped[str] = mapped_column(Text)
-    allergens: Mapped[str] = mapped_column(Text)
-    medical_history: Mapped[str] = mapped_column(Text)
+    cultural: Mapped[str] = mapped_column(Text, nullable=True)
+    dietary: Mapped[str] = mapped_column(Text, nullable=True)
+    allergens: Mapped[str] = mapped_column(Text, nullable=True)
+    medical_history: Mapped[str] = mapped_column(Text, nullable=True)
     user_id: Mapped[int] = mapped_column(Integer, db.ForeignKey("users.id"))
+    risk_level: Mapped[str] = mapped_column(String, nullable=True)
     patient = relationship("User", back_populates="patient_profile")
     patient_logs = relationship("PatientLog", back_populates="patient")
 
@@ -61,7 +64,7 @@ class Appointment(db.Model):
     time: Mapped[time] = mapped_column(Time, nullable=False)
     created_by: Mapped[str] = mapped_column(String)
     reason: Mapped[str] = mapped_column(Text)
-    completed: Mapped[bool] = mapped_column(Boolean)
+    status: Mapped[str] = mapped_column(String)
     doctor_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), nullable=False)
     patient_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), nullable=False)
     doctor = relationship("User", foreign_keys=doctor_id)
@@ -112,6 +115,13 @@ def login_required(f):
 def load_user(user_id):
     return db.session.get(User, int(user_id))
 
+
+
+# HOME PAGES
+@app.route("/test")
+def test():
+    return render_template("test.html")
+
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -131,6 +141,9 @@ def register():
                 new_user = User(
                     username=form.name.data,
                     email=form.email.data,
+                    gender=form.gender.data,
+                    dob=form.dob.data,
+                    contact=form.tel.data,
                     password=generate_password_hash(form.password.data, salt_length=8),
                     role_level=Role.PATIENT
                 )
@@ -174,22 +187,50 @@ def profile():
     role = Role(current_user.role_level).name
     patient_profile = current_user.patient_profile
     patient_log = []
-    for log in patient_profile.patient_logs:
-        log.append(
-            {
-                ""
-            }
-        )
+    if patient_profile:
+        for log in patient_profile.patient_logs:
+            log.append(
+                {
+                    ""
+                }
+            )
     return render_template("profile.html", role=role, patient_profile=patient_profile, patient_log=patient_log)
 
+@app.route("/profile/edit", methods=["GET","POST"])
+def edit_profile():
+    form = EditProfileForm(
+        name=current_user.username,
+        gender=current_user.gender,
+        dob=current_user.dob,
+        tel=current_user.contact
+    )
+    if request.method == "POST" and form.validate_on_submit():
+        current_user.name = form.name.data
+        current_user.gender = form.gender.data
+        current_user.dob = form.dob.data
+        current_user.contact = form.tel.data
+        db.session.commit()
+    return render_template("edit_user_profile.html", form=form)
+
+@app.route("/profile/edit/password", methods=["GET", "POST"])
+def change_password():
+    form = PasswordChangeForm()
+    if request.method == "POST" and form.validate_on_submit():
+        if check_password_hash(current_user.password, form.old_pass.data):
+            current_user.password = generate_password_hash(form.password.data, salt_length=8)
+            db.session.commit()
+            flash("Successfully changed password", "success")
+            return redirect(url_for("profile"))
+        else:
+            flash("Password Incorrect", "error")
+    return render_template("change_password.html", form=form)
+
 @app.route("/profile/create", methods=["GET", "POST"])
-def create_profile():
+def create_patient_profile():
     form = PatientProfileForm()
     if request.method == "POST":
         if form.validate_on_submit():
             new_profile = PatientProfile(
-                gender = form.gender.data,
-                dob = form.dob.data,
                 cultural = form.cultural.data,
                 dietary = form.dietary.data,
                 allergens = form.allergens.data,
@@ -198,15 +239,14 @@ def create_profile():
             )
             db.session.add(new_profile)
             db.session.commit()
+            flash("Successfully created patient profile", "success")
         return redirect(url_for("profile"))
     return render_template("profile_edit.html", form=form)
 
-@app.route("/profile/edit", methods=["GET", "POST"])
+@app.route("/profile/patient/edit", methods=["GET", "POST"])
 def edit_patient_profile():
     cur_profile = current_user.patient_profile
     form = PatientProfileForm(
-        gender=cur_profile.gender,
-        dob=cur_profile.dob,
         cultural=cur_profile.cultural,
         dietary=cur_profile.dietary,
         allergens=cur_profile.allergens,
@@ -214,12 +254,11 @@ def edit_patient_profile():
     )
     if request.method == "POST":
         if form.validate_on_submit():
-            cur_profile.gender = form.gender.data
-            cur_profile.dob = form.dob.data
             cur_profile.cultural = form.cultural.data
             cur_profile.dietary = form.dietary.data
             cur_profile.allergens = form.allergens.data
             cur_profile.medical_history = form.medical_history.data
+            flash("Successfully edited patient profile", "success")
 
             db.session.commit()
         return redirect(url_for("profile"))
@@ -229,14 +268,21 @@ def edit_patient_profile():
 def appointment():
     return render_template("appointments.html")
 
-@app.route("/appointment/create")
+@app.route("/appointment/create", methods=["GET","POST"])
 def create_appointment():
+    form = CreateAppointmentForm()
+    if request.method == "POST" and form.validate_on_submit():
+        pass
+
     pass
 
+@app.route("/about")
+def about():
+    pass
 
 @app.route("/contact", methods=["GET", "POST"])
-def contact():
-    form = ContactForm()
+def feedback():
+    form = FeedbackForm()
     if request.method == "GET":
         if form.validate_on_submit():
             print(form.email.data)
@@ -244,19 +290,106 @@ def contact():
 
     return render_template("contact.html", form=form)
 
+@app.route("/patients", methods=["POST","GET"])
+def patient_page():
+    form = SearchPatientForm()
+    patients = db.select(User).where(User.role_level == 0)
+    if request.method == "POST" and form.validate_on_submit():
+        print(f"Searching: {form.search.data}")
+        print(type(form.gender.data))
+        print(form.min_age.data)
+        print(form.max_age.data)
+        print(form.risk_level.data)
+        if form.search.data.strip() != "":
+            patients = patients.where(User.username.ilike(f"%{form.search.data}%"))
+        if form.gender.data:
+            patients = patients.where(User.gender == form.gender.data)
+        if form.min_age.data:
+            patients = patients.where(User.dob <= dt.date.today() - dt.timedelta(form.min_age.data))
+        if form.max_age.data:
+            patients = patients.where(User.dob >= dt.date.today() - dt.timedelta(form.max_age.data))
+        if form.risk_level.data:
+            patients = patients.join(User.patient_profile).where(PatientProfile.risk_level == form.risk_level.data)
+    patients = db.session.execute(patients).scalars().all()
+    patient_list = []
+    if patients:
+        for patient in patients:
+            if patient.patient_profile:
+                risk = patient.patient_profile.risk_level
+            else:
+                risk = None
+            profile_url = url_for("patient_details", patient_id=patient.id)
+            patient_list.append(
+                {
+                    "name": patient.username,
+                    "dob": patient.dob,
+                    "gender": patient.gender,
+                    "risk_level": risk,
+                    "profile": f"<a href='{ profile_url }' class='btn btn-primary btn-sm'>Profile</a>"
+                }
+            )
+    else:
+        patient_list.append({}),
+    titles = [
+        ("name","Patient Name"),
+        ("dob", "DOB"),
+        ("gender", "Gender"),
+        ("risk_level", "Risk Level"),
+        ("profile", "#")
+    ]
+
+
+    return render_template("patient_list.html", form=form, patient_list=patient_list, titles=titles)
+
+@app.route("/patients/<int:patient_id>")
+def patient_details(patient_id):
+    result = db.session.execute(db.select(User).where(User.id == patient_id, User.role_level == 0)).scalar()
+    return render_template("patient_profiles.html", patient=result)
+
+@app.route("/patients/<int:patient_id>/create", methods=["GET","POST"])
+def create_profile_staff(patient_id):
+    form = PatientProfileForm()
+    if request.method == "POST":
+        if form.validate_on_submit():
+            new_profile = PatientProfile(
+                cultural=form.cultural.data,
+                dietary=form.dietary.data,
+                allergens=form.allergens.data,
+                medical_history=form.medical_history.data,
+                user_id=patient_id
+            )
+            db.session.add(new_profile)
+            db.session.commit()
+        return redirect(url_for("patient_details", patient_id=patient_id))
+    return render_template("profile_edit.html", form=form)
+
+@app.route("/reports")
+def reports():
+    pass
+
+@app.route("/risk-dashboard")
+def risk_dashboard():
+    pass
+
+@app.route("/alert-and-notes")
+def alert_and_notes():
+    pass
+
+@app.route("/manage-patients")
+def manage_patients():
+    pass
+
+@app.route("/manage-staff")
+def manage_staff():
+    pass
+
 @app.route("/staff")
 def staff():
     pass
 
 @app.route("/admin")
 def admin():
-    return render_template("admin_home.html")
-
-
-
-
-
-
+    return render_template("admin_dashboard.html")
 
 
 

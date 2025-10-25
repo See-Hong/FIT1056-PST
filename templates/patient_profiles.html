@@ -4,41 +4,37 @@
 {% block content %}
 <div class="d-flex justify-content-center align-items-center vh-50">
   <div class="card shadow p-4 v-50 w-75" style="width: 400px;">
-    <h3 class="text-center mb-3">Profile</h3>
+    <h3 class="text-center mb-3">{{ patient.username }}'s Profile</h3>
       <div class="row">
           <div class="col">
-              <p>Username: {{ current_user.username }}</p>
-              <p>Email: {{ current_user.email }}</p>
-              <p>Role: {{ role.title() }}</p>
+              <p>Username: {{ patient.username }}</p>
+              <p>Email: {{ patient.email }}</p>
+              <p>Gender: {{ patient.gender }}</p>
           </div>
           <div class="col">
-              <p>Gender: {{ current_user.gender }}</p>
-              <p>Date of Birth: {{ current_user.dob }}</p>
-              <p>Contact: {{ current_user.contact }}</p>
+              <p>Date of Birth: {{ patient.dob }}</p>
+              <p>Contact: {{ patient.contact }}</p>
           </div>
       </div>
-      <a href="{{ url_for('change_password') }}" class="btn btn-secondary btn-bottom-right">Change Password</a>
-      <a href="{{ url_for('edit_profile') }}" class="btn btn-primary btn-bottom-right">Edit Profile</a>
   </div>
 </div>
 
-{% if current_user.role_level == 0 %}
 <div class="d-flex justify-content-center align-items-center vh-50 mt-3">
   <div class="card shadow p-4 v-50 w-75" style="width: 400px;">
     <h3 class="text-center mb-3">Patient Profile</h3>
-{% if patient_profile %}
-<p>Cultural Preferences: {{ patient_profile.cultural }}</p>
-<p>Dietary Preferences: {{ patient_profile.dietary }}</p>
-<p>Allergens: {{ patient_profile.allergens }} </p>
-<p>Medical History: {{ patient_profile.medical_history }}</p>
+{% if patient.patient_profile %}
+<p>Cultural Preferences: {{ patient.patient_profile.cultural }}</p>
+<p>Dietary Preferences: {{ patient.patient_profile.dietary }}</p>
+<p>Allergens: {{ patient.patient_profile.allergens }} </p>
+<p>Medical History: {{ patient.patient_profile.medical_history }}</p>
       <a href="{{ url_for('edit_patient_profile') }}" class="btn btn-primary btn-bottom-right">Edit Patient Profile</a>
 
 {% else %}
-<a href="{{ url_for('create_patient_profile') }}" class="btn btn-primary">+ Create Patient Profile</a>
+<a href="{{ url_for('create_profile_staff', patient_id=patient.id) }}" class="btn btn-primary">+ Create Patient Profile</a>
 {% endif %}
       </div>
           </div>
-{% if patient_profile %}
+{% if patient.patient_profile %}
       <div class="d-flex justify-content-center align-items-center vh-50 mt-3">
   <div class="card shadow p-4 v-50 w-75" style="width: 400px;">
     <h3 class="text-center mb-3">Patient Logs</h3>
@@ -46,7 +42,6 @@
       {{ render_table(patient_log) }}
       {% endif %}
       </div> </div>
-{% endif %}
 {% endif %}
 
 {% endblock %}
