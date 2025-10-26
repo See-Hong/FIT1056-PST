@@ -40,6 +40,8 @@
             <li><a href="{{ url_for('contact') }}" class="nav-link px-2">Contact</a></li>
             <li><a href="{{ url_for('appointment') }}" class="nav-link px-2">Appointments</a></li>
             {% elif current_user.role_level == 1 %}
+
+
             <li><a href="{{ url_for('patient_page') }}" class="nav-link px-2">Patients</a></li>
             <li><a href="{{ url_for('appointment') }}" class="nav-link px-2">Appointments</a></li>
             <li><a href="{{ url_for('reports') }}" class="nav-link px-2">Reports</a></li>
@@ -56,6 +58,11 @@
             <li><a href="{{ url_for('appointment') }}" class="nav-link px-2">System Logs / Audit</a></li>
             {% endif %}
 
+            Patients
+            Appointments
+            Risk Dashboard
+            Alerts / Notes
+            Reports
             {% if current_user.is_authenticated %}
             <li><a href="{{ url_for('profile') }}" class="nav-link px-2">Profile</a></li>
             {% endif %}

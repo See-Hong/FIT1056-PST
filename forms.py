@@ -1,7 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, EmailField, SelectField, DateField, IntegerField, TelField, DateTimeField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange, Regexp
+from wtforms import StringField, SubmitField, PasswordField, EmailField, SelectField, DateField, IntegerField, TelField, TimeField
+from wtforms.fields.simple import BooleanField
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange, Regexp, ValidationError
 from flask_ckeditor import CKEditorField
+import datetime as dt
 import email_validator
 
 class RegisterForm(FlaskForm):
@@ -20,8 +22,13 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Log In")
 
 class FeedbackForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired()])
     email = EmailField("Email", validators=[DataRequired(), Email("Please enter a valid email.")])
-    feedback = CKEditorField("Feedback", validators=[DataRequired()])
+    feedback_type = StringField("Feedback Type", validators=[DataRequired()])
+    rating = IntegerField("Rating", validators=[DataRequired()])
+    category = StringField("Category", validators=[DataRequired()])
+    message = CKEditorField("Feedback", validators=[DataRequired()])
+    anonymous = BooleanField("Anonymous", validators=[Optional()])
     submit = SubmitField("Send Feedback")
 
 class EditProfileForm(FlaskForm):
@@ -53,6 +60,22 @@ class SearchPatientForm(FlaskForm):
     submit = SubmitField("Search")
 
 class CreateAppointmentForm(FlaskForm):
-    datetime = DateTimeField("Appointment Date and Time", validators=[DataRequired()])
-    reason = StringField("Appointment Reason", validators=[DataRequired()])
+    date = DateField("Date", validators=[DataRequired()])
+
+    def validate_date(self, field):
+        if field.data <= dt.date.today() + dt.timedelta(days=3):
+            raise ValidationError("Appointments must be booked 3 days in advance.")
+
+    time = TimeField("Time", validators=[DataRequired()])
+    reason = StringField("Reason", validators=[DataRequired()])
+    submit = SubmitField("Confirm")
+
+class CreatePatientLogForm(FlaskForm):
+    medical = CKEditorField("Medical Observations", validators=[DataRequired()])
+    emotional = CKEditorField("Emotional State", validators=[Optional()])
+    note = CKEditorField("Notes", validators=[Optional()])
+    submit = SubmitField("Confirm")
+
+class PatientNoteForm(FlaskForm):
+    note = CKEditorField("Patient Notes", validators=[Optional()])
     submit = SubmitField("Confirm")

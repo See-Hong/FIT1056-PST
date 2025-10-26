@@ -42,8 +42,8 @@
       <div class="d-flex justify-content-center align-items-center vh-50 mt-3">
   <div class="card shadow p-4 v-50 w-75" style="width: 400px;">
     <h3 class="text-center mb-3">Patient Logs</h3>
-      {% if patient_log %}
-      {{ render_table(patient_log) }}
+      {% if log_list %}
+      {{ render_table(log_list, titles=titles, safe_columns=("add")) }}
       {% endif %}
       </div> </div>
 {% endif %}

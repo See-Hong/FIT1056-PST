@@ -8,9 +8,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean, Date, Text, Time
 from flask_sqlalchemy import SQLAlchemy
-from forms import RegisterForm, LoginForm, FeedbackForm, PatientProfileForm, SearchPatientForm, EditProfileForm, PasswordChangeForm, CreateAppointmentForm
+from forms import RegisterForm, LoginForm, FeedbackForm, PatientProfileForm, SearchPatientForm, EditProfileForm, PasswordChangeForm, CreateAppointmentForm, CreatePatientLogForm, PatientNoteForm
 from functools import wraps
 from enum import IntEnum
+from dotenv import load_dotenv
+import os
+import requests
+
+load_dotenv(".env")
+SHEETY_ENDPOINT = os.environ.get("SHEETY_ENDPOINT")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -62,11 +68,11 @@ class Appointment(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     date: Mapped[date] = mapped_column(Date, nullable=False)
     time: Mapped[time] = mapped_column(Time, nullable=False)
-    created_by: Mapped[str] = mapped_column(String)
+    created_by: Mapped[int] = mapped_column(Integer)
     reason: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String)
-    doctor_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), nullable=False)
-    patient_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), nullable=False)
+    doctor_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), nullable=True)
+    patient_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), nullable=True)
     doctor = relationship("User", foreign_keys=doctor_id)
     patient = relationship("User", foreign_keys=patient_id)
 
@@ -75,12 +81,11 @@ class PatientLog(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     date: Mapped[date] = mapped_column(Date, nullable=False)
     time: Mapped[time] = mapped_column(Time, nullable=False)
-    created_by: Mapped[str] = mapped_column(String)
-    medical: Mapped[str] = mapped_column(Text)
-    emotional: Mapped[str] = mapped_column(Text)
-    dietary: Mapped[str] = mapped_column(Text)
-    cultural: Mapped[str] = mapped_column(Text)
-    story: Mapped[str] = mapped_column(Text)
+    created_by: Mapped[int] = mapped_column(Integer)
+    medical: Mapped[str] = mapped_column(Text, nullable=True)
+    emotional: Mapped[str] = mapped_column(Text, nullable=True)
+    note: Mapped[str] = mapped_column(Text, nullable=True)
+    patient_note: Mapped[str] = mapped_column(Text, nullable=True)
     profile_id: Mapped[int] = mapped_column(db.ForeignKey("patients.id"))
     patient = relationship("PatientProfile", back_populates="patient_logs")
 
@@ -158,21 +163,20 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
-    if request.method == "POST":
-        if form.validate_on_submit():
-            account = db.session.execute(db.select(User).where(User.email == form.email.data)).scalar()
-            if account:
-                if check_password_hash(account.password, form.password.data):
-                    login_user(account)
-                    flash("Successfully logged in", "success")
-                    return redirect(url_for("home"))
-                else:
-                    flash("Invalid credentials", "danger")
-                    return redirect(url_for("login"))
+    if form.validate_on_submit():
+        account = db.session.execute(db.select(User).where(User.email == form.email.data)).scalar()
+        if account:
+            if check_password_hash(account.password, form.password.data):
+                login_user(account)
+                flash("Successfully logged in", "success")
+                return redirect(url_for("home"))
             else:
-                flash("That email has not been registered. Try signing up instead.", "danger")
+                flash("Invalid credentials", "error")
                 return redirect(url_for("login"))
-    return render_template("account.html", form=form, type="login")
+        else:
+            flash("That email has not been registered. Try signing up instead.", "danger")
+            return redirect(url_for("login"))
+    return render_template("test.html", form=form, type="login")
 
 @login_required
 @app.route("/logout", methods=["POST"])
@@ -186,15 +190,41 @@ def logout():
 def profile():
     role = Role(current_user.role_level).name
     patient_profile = current_user.patient_profile
-    patient_log = []
+    log_list = []
     if patient_profile:
         for log in patient_profile.patient_logs:
-            log.append(
-                {
-                    ""
-                }
-            )
-    return render_template("profile.html", role=role, patient_profile=patient_profile, patient_log=patient_log)
+            log_list.append({
+                "date": log.date,
+                "time": log.time,
+                "created_by": current_user.username,
+                "medical": log.medical,
+                "emotional": log.emotional,
+                "notes": log.note,
+                "patient_note": log.patient_note,
+                "add": f"<a href='{url_for("add_patient_notes", log_id=log.id)}' class='btn btn-primary btn-sm'>Add Notes</a>",
+            })
+    titles = [
+        ("date", "Date"),
+        ("time", "Time"),
+        ("created_by", "Created By"),
+        ("medical", "Medical Observations"),
+        ("emotional", "Emotional State"),
+        ("notes", "Notes"),
+        ("patient_note", "Patient Notes"),
+        ("add", "#"),
+    ]
+    return render_template("profile.html", role=role, patient_profile=patient_profile, log_list=log_list, titles=titles)
+
+@app.route("/profile/log/<int:log_id>/add_note", methods=["GET", "POST"])
+def add_patient_notes(log_id):
+    log = db.session.get(PatientLog, log_id)
+    form = PatientNoteForm(note=log.patient_note)
+    if request.method == "POST" and form.validate_on_submit():
+        log.patient_note = form.note.data
+        db.session.commit()
+        return redirect(url_for("profile"))
+    return render_template("add_patient_note.html", form=form)
+
 
 @app.route("/profile/edit", methods=["GET","POST"])
 def edit_profile():
@@ -272,25 +302,45 @@ def appointment():
 def create_appointment():
     form = CreateAppointmentForm()
     if request.method == "POST" and form.validate_on_submit():
-        pass
+        new_appointment = Appointment(
+                            date=form.date.data,
+                            time=form.time.data,
+                            reason=form.reason.data,
+                            created_by=current_user.id,
+                            status="Pending",
+                            patient_id = current_user.id,
+                        )
+        db.session.add(new_appointment)
+        db.session.commit()
+        flash("Successfully booked an appointment", "success")
+        return redirect(url_for("appointment"))
+    return render_template("create_appointment.html", form=form)
 
-    pass
 
 @app.route("/about")
 def about():
     pass
 
-@app.route("/contact", methods=["GET", "POST"])
+@app.route("/feedback", methods=["GET", "POST"])
 def feedback():
     form = FeedbackForm()
-    if request.method == "GET":
-        if form.validate_on_submit():
-            print(form.email.data)
-            print(form.feedback.data)
+    if request.method == "POST":
+        new_row = {
+            "feedback": {
+                "name": form.name.data,
+                "email": form.email.data,
+                "feedback_type": form.feedback_type.data,
+                "rating": form.rating.data,
+                "category": form.category.data,
+                "message": form.message.data,
+                "anonymous": form.anonymous.data,
+            }
+        }
+        requests.post(SHEETY_ENDPOINT, json=new_row)
+        return redirect(url_for("feedback"))
+    return render_template("feedback.html", form=form)
 
-    return render_template("contact.html", form=form)
-
-@app.route("/patients", methods=["POST","GET"])
+@app.route("/staff/patients", methods=["POST","GET"])
 def patient_page():
     form = SearchPatientForm()
     patients = db.select(User).where(User.role_level == 0)
@@ -341,12 +391,51 @@ def patient_page():
 
     return render_template("patient_list.html", form=form, patient_list=patient_list, titles=titles)
 
-@app.route("/patients/<int:patient_id>")
+@app.route("/staff/patients/<int:patient_id>")
 def patient_details(patient_id):
     result = db.session.execute(db.select(User).where(User.id == patient_id, User.role_level == 0)).scalar()
-    return render_template("patient_profiles.html", patient=result)
+    patient_log = result.patient_profile.patient_logs
+    log_list = []
+    for log in patient_log:
+        log_list.append({
+            "date": log.date,
+            "time": log.time,
+            "created_by": current_user.username,
+            "medical": log.medical,
+            "emotional": log.emotional,
+            "notes": log.note,
+            "patient_note": log.patient_note,
+            "edit": f"<a href='{ url_for("edit_log", patient_id=patient_id, log_id=log.id) }' class='btn btn-primary btn-sm'>Edit</a>",
+        })
+    titles = [
+        ("date", "Date"),
+        ("time", "Time"),
+        ("created_by", "Created By"),
+        ("medical", "Medical Observations"),
+        ("emotional", "Emotional State"),
+        ("notes", "Notes"),
+        ("patient_note", "Patient Notes"),
+        ("edit", "#"),
+    ]
+    return render_template("patient_profiles.html", patient=result, log_list=log_list, titles=titles)
 
-@app.route("/patients/<int:patient_id>/create", methods=["GET","POST"])
+@app.route("/staff/patients/<int:patient_id>/log/<int:log_id>/edit", methods=["GET", "POST"])
+def edit_log(patient_id, log_id):
+    log = db.session.get(PatientLog, log_id)
+    form = CreatePatientLogForm(
+        medical= log.medical,
+        emotional= log.emotional,
+        note= log.note,
+    )
+    if request.method == "POST" and form.validate_on_submit():
+        log.medical = form.medical.data
+        log.emotional = form.emotional.data
+        log.note = form.note.data
+        db.session.commit()
+        return redirect(url_for("patient_details", patient_id=patient_id))
+    return render_template("create_patient_log.html", form=form, edit=True)
+
+@app.route("/staff/patients/<int:patient_id>/create", methods=["GET","POST"])
 def create_profile_staff(patient_id):
     form = PatientProfileForm()
     if request.method == "POST":
@@ -363,23 +452,43 @@ def create_profile_staff(patient_id):
         return redirect(url_for("patient_details", patient_id=patient_id))
     return render_template("profile_edit.html", form=form)
 
-@app.route("/reports")
+@app.route("/staff/patients/<int:patient_id>/log/create", methods=["GET", "POST"])
+def create_patient_log(patient_id):
+    form = CreatePatientLogForm()
+    if request.method == "POST" and form.validate_on_submit():
+        new_log = PatientLog(
+            date=dt.date.today(),
+            time=dt.datetime.today().time(),
+            medical=form.medical.data,
+            emotional=form.emotional.data,
+            note=form.note.data,
+            created_by=current_user.username,
+            profile_id=db.session.get(User, patient_id).patient_profile.id
+        )
+        db.session.add(new_log)
+        db.session.commit()
+        flash("Successfully added a patient log", "success")
+        return redirect(url_for("patient_details", patient_id=patient_id))
+    return render_template("create_patient_log.html", form=form)
+
+
+@app.route("/staff/reports")
 def reports():
     pass
 
-@app.route("/risk-dashboard")
+@app.route("/staff/risk-dashboard")
 def risk_dashboard():
     pass
 
-@app.route("/alert-and-notes")
+@app.route("/staff/alert-and-notes")
 def alert_and_notes():
     pass
 
-@app.route("/manage-patients")
+@app.route("/admin/manage-patients")
 def manage_patients():
     pass
 
-@app.route("/manage-staff")
+@app.route("/admin/manage-staff")
 def manage_staff():
     pass
 

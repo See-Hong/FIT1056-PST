@@ -188,7 +188,8 @@
     </div>
 
     <div class="feedback-form-card">
-        <form action="{{ url_for('contact') }}" method="POST">
+        <form action="{{ url_for('feedback') }}" method="POST">
+            {{ form.hidden_tag() }}
             <!-- Feedback Type Selection -->
             <div class="mb-4">
                 <label class="form-label">What type of feedback would you like to share?</label>
