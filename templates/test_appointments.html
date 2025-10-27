@@ -151,42 +151,120 @@
         <h1 class="page-title">Book Your Appointment</h1>
         <p class="page-subtitle">Schedule a consultation with our healthcare professionals</p>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div class="info-section">
             <h5>📋 Appointment Information</h5>
             <ul>
                 <li>Appointments are available Monday to Saturday, 9:00 AM - 6:00 PM</li>
-                <li>Appoints must be booked 3 days in advance</li>
                 <li>Please arrive 10 minutes before your scheduled time</li>
                 <li>Bring your ID and insurance information</li>
                 <li>You will receive a confirmation email shortly</li>
             </ul>
         </div>
 
-        <form method="POST" action="{{ url_for('create_appointment') }}">
+        <form method="POST" action="{{ url_for('appointment') }}">
             {{ form.hidden_tag() }}
+            
             <div class="row mb-4">
                 <div class="col-md-6 mb-3">
-                    <label for="date" class="form-label">Preferred Date *</label>
-                    {{ form.date(class="form-control", type="date") }}
-                    {% if form.date.errors %}
+                    <label for="first_name" class="form-label">First Name *</label>
+                    {{ form.first_name(class="form-control", placeholder="Enter your first name") }}
+                    {% if form.first_name.errors %}
                         <div class="text-danger mt-1">
-                            {% for error in form.date.errors %}
+                            {% for error in form.first_name.errors %}
                                 <small>{{ error }}</small>
                             {% endfor %}
                         </div>
                     {% endif %}
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="time" class="form-label">Preferred Time *</label>
-                    {{ form.time(class="form-select") }}
-                    {% if form.time.errors %}
+                    <label for="last_name" class="form-label">Last Name *</label>
+                    {{ form.last_name(class="form-control", placeholder="Enter your last name") }}
+                    {% if form.last_name.errors %}
                         <div class="text-danger mt-1">
-                            {% for error in form.time.errors %}
+                            {% for error in form.last_name.errors %}
                                 <small>{{ error }}</small>
                             {% endfor %}
                         </div>
                     {% endif %}
                 </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">Email Address *</label>
+                    {{ form.email(class="form-control", placeholder="your.email@example.com") }}
+                    {% if form.email.errors %}
+                        <div class="text-danger mt-1">
+                            {% for error in form.email.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="phone" class="form-label">Phone Number *</label>
+                    {{ form.phone(class="form-control", placeholder="+60 12-345 6789") }}
+                    {% if form.phone.errors %}
+                        <div class="text-danger mt-1">
+                            {% for error in form.phone.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="appointment_type" class="form-label">Appointment Type *</label>
+                {{ form.appointment_type(class="form-select") }}
+                {% if form.appointment_type.errors %}
+                    <div class="text-danger mt-1">
+                        {% for error in form.appointment_type.errors %}
+                            <small>{{ error }}</small>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <label for="appointment_date" class="form-label">Preferred Date *</label>
+                    {{ form.appointment_date(class="form-control", type="date") }}
+                    {% if form.appointment_date.errors %}
+                        <div class="text-danger mt-1">
+                            {% for error in form.appointment_date.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="appointment_time" class="form-label">Preferred Time *</label>
+                    {{ form.appointment_time(class="form-select") }}
+                    {% if form.appointment_time.errors %}
+                        <div class="text-danger mt-1">
+                            {% for error in form.appointment_time.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="doctor_preference" class="form-label">Doctor Preference (Optional)</label>
+                {{ form.doctor_preference(class="form-select") }}
             </div>
 
             <div class="mb-4">
@@ -199,6 +277,11 @@
                         {% endfor %}
                     </div>
                 {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label for="notes" class="form-label">Additional Notes (Optional)</label>
+                {{ form.notes(class="form-control", rows="3", placeholder="Any additional information we should know...") }}
             </div>
 
             {{ form.submit(class="submit-btn") }}

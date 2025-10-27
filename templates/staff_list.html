@@ -291,6 +291,13 @@
     .table-responsive::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(135deg, #764ba2, #667eea);
     }
+.disabled-link {
+  color: light_gray;
+  pointer-events: none;  /* disables clicking */
+  text-decoration: none;
+  cursor: default;
+  opacity: 0.6;
+}
 </style>
 <!-- Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -306,7 +313,7 @@
                 <div class="search-card-header">
                     <h4>
                         <i class="fas fa-search"></i>
-                        Search & Filter Patients
+                        Search & Filter Accounts
                     </h4>
                 </div>
                 <div class="search-card-body">
@@ -318,11 +325,11 @@
                             <div class="col-12">
                                 <label class="form-label">
                                     <i class="fas fa-user-injured"></i>
-                                    Patient Search
+                                    Account Search
                                 </label>
                                 <div class="input-group">
                                     <i class="fas fa-search input-icon"></i>
-                                    {{ form.search(class="form-control with-icon", placeholder="Search by name") }}
+                                    {{ form.search(class="form-control with-icon", placeholder="Search by name or email") }}
                                 </div>
                             </div>
                         </div>
@@ -334,19 +341,6 @@
                                 Advanced Filters
                             </div>
                             <div class="row g-3">
-                                <!-- Age Range -->
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label">
-                                        <i class="fas fa-birthday-cake"></i>
-                                        Age Range
-                                    </label>
-                                    <div class="age-range-container">
-                                        {{ form.min_age(class="form-control", placeholder="Min") }}
-                                        <span class="age-divider">—</span>
-                                        {{ form.max_age(class="form-control", placeholder="Max") }}
-                                    </div>
-                                </div>
-
                                 <!-- Gender -->
                                 <div class="col-12 col-md-4">
                                     <label class="form-label">
@@ -356,13 +350,12 @@
                                     {{ form.gender(class="form-control") }}
                                 </div>
 
-                                <!-- Risk Level -->
                                 <div class="col-12 col-md-4">
                                     <label class="form-label">
                                         <i class="fas fa-exclamation-triangle"></i>
-                                        Risk Level
+                                        Role
                                     </label>
-                                    {{ form.risk_level(class="form-control") }}
+                                    {{ form.role(class="form-control") }}
                                 </div>
                             </div>
                         </div>
@@ -385,19 +378,19 @@
                 <div class="results-card-header">
                     <h4>
                         <i class="fas fa-users"></i>
-                        Patient Results
-                        <span class="result-count">{{ patient_list|length }} patients</span>
+                        Account Results
+                        <span class="result-count">{{ account_list|length }} accounts</span>
                     </h4>
                 </div>
                 <div class="results-card-body">
-                    {% if patient_list|length > 0 %}
+                    {% if account_list|length > 0 %}
                     <div class="table-responsive">
-                        {{ render_table(patient_list, titles=titles, safe_columns=("profile")) }}
+                        {{ render_table(account_list, titles=titles, safe_columns=("change")) }}
                     </div>
                     {% else %}
                     <div class="empty-state">
                         <i class="fas fa-inbox"></i>
-                        <h5>No patients found</h5>
+                        <h5>No accounts found</h5>
                         <p>Try adjusting your search or filter criteria</p>
                     </div>
                     {% endif %}
@@ -410,41 +403,6 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const minField = document.getElementById("min_age");
-    const maxField = document.getElementById("max_age");
-
-    function adjustMaxIfNeeded() {
-        const minVal = parseInt(minField.value);
-        const maxVal = parseInt(maxField.value);
-
-        if (!isNaN(minVal) && !isNaN(maxVal) && maxVal < minVal) {
-            maxField.value = minVal;
-        }
-    }
-
-    function ageInputLimit() {
-        const minVal = parseInt(minField.value);
-        const maxVal = parseInt(maxField.value);
-
-        if (!isNaN(minVal) && minVal < 0) {
-            minField.value = 0;
-        }
-
-        if (!isNaN(maxVal) && maxVal > 120) {
-            maxField.value = 120;
-        }
-    }
-
-    minField.addEventListener("input", function() {
-        adjustMaxIfNeeded();
-        ageInputLimit();
-    });
-
-    maxField.addEventListener("input", function() {
-        adjustMaxIfNeeded();
-        ageInputLimit();
-    });
-
     // Add smooth scroll to results after form submission
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.toString()) {

@@ -215,6 +215,9 @@
                         <div>Complaint</div>
                     </div>
                 </div>
+                {% for error in form.feedback_type.errors %}
+                  <small class="text-danger">{{ error }}</small>
+                {% endfor %}
             </div>
 
             <!-- Rating -->
@@ -228,6 +231,9 @@
                     <span class="star-rating" onclick="setRating(5)">★</span>
                     <input type="hidden" name="rating" id="rating-input" value="">
                 </div>
+                {% for error in form.rating.errors %}
+                  <small class="text-danger">{{ error }}</small>
+                {% endfor %}
             </div>
 
             <!-- Name -->
@@ -236,6 +242,9 @@
                 <input type="text" class="form-control" id="name" name="name"
                        {% if current_user.is_authenticated %}value="{{ current_user.username }}"{% endif %}
                        required>
+                {% for error in form.name.errors %}
+                  <small class="text-danger">{{ error }}</small>
+                {% endfor %}
             </div>
 
             <!-- Email -->
@@ -244,6 +253,9 @@
                 <input type="email" class="form-control" id="email" name="email"
                        {% if current_user.is_authenticated %}value="{{ current_user.email }}"{% endif %}
                        required>
+                {% for error in form.email.errors %}
+                  <small class="text-danger">{{ error }}</small>
+                {% endfor %}
             </div>
 
             <!-- Category -->
@@ -260,6 +272,9 @@
                     <option value="billing">Billing & Admin</option>
                     <option value="other">Other</option>
                 </select>
+                {% for error in form.category.errors %}
+                  <small class="text-danger">{{ error }}</small>
+                {% endfor %}
             </div>
 
             <!-- Message -->
@@ -267,6 +282,9 @@
                 <label for="message" class="form-label">Your Feedback</label>
                 <textarea class="form-control" id="message" name="message" rows="6"
                           placeholder="Please share your detailed feedback here..." required></textarea>
+                {% for error in form.message.errors %}
+                  <small class="text-danger">{{ error }}</small>
+                {% endfor %}
             </div>
 
             <!-- Anonymous Option -->

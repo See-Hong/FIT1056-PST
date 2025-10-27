@@ -335,9 +335,11 @@
         <h1 class="hero-title"><b>Welcome to Moonway Medical</b></h1>
         <p class="hero-subtitle" style="margin-left: auto; margin-right: auto; max-width: 600px;"><b>Providing compassionate, comprehensive healthcare with cutting-edge technology and personalized patient care</b></p>
         <div class="hero-buttons">
+            {% if current_user.role_level == 0 %}
             <a href="{{ url_for('appointment') }}" class="hero-btn hero-btn-primary">
                 <i class="fas fa-calendar-check"></i> Book Appointment
             </a>
+            {% endif %}
             <a href="{{ url_for('profile') }}" class="hero-btn hero-btn-secondary">
                 <i class="fas fa-user"></i> My Profile
             </a>
@@ -469,7 +471,7 @@
         <a href="{{ url_for('register') }}" class="hero-btn hero-btn-primary">
             <i class="fas fa-user-plus"></i> Create Account
         </a>
-        {% else %}
+        {% elif current_user.role_level == 0 %}
         <a href="{{ url_for('appointment') }}" class="hero-btn hero-btn-primary">
             <i class="fas fa-calendar-check"></i> Book Your Appointment
         </a>

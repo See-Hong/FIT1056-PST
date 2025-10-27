@@ -122,7 +122,10 @@
         <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
             <li><a href="{{ url_for('home') }}" class="nav-link px-3 zi {{ 'active' if request.endpoint == 'home' }}"><span>Home</span></a></li>
             <li><a href="{{ url_for('about') }}" class="nav-link px-3 zi {{ 'active' if request.endpoint == 'about' }}">About</a></li>
-            <li><a href="{{ url_for('feedback') }}" class="nav-link px-3 zi {{ 'active' if request.endpoint == 'contact' }}">Feedback</a></li>
+            {% if current_user.role_level == 0 %}
+            <li><a href="{{ url_for('appointment') }}" class="nav-link px-3 zi {{ 'active' if request.endpoint == 'appointment' }}">Appointment</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('feedback') }}" class="nav-link px-3 zi {{ 'active' if request.endpoint == 'feedback' }}">Feedback</a></li>
             {% if current_user.is_authenticated %}
             <li><a href="{{ url_for('profile') }}" class="nav-link px-3 zi {{ 'active' if request.endpoint == 'profile' }}">Profile</a></li>
             {% endif %}
@@ -136,7 +139,7 @@
             <a href="{{ url_for('staff') }}" class="btn btn-outline-primary me-2">Staff Page</a>
             {% endif %}
             <form action="{{ url_for('logout') }}" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-danger me-2">Logout</button>
+                <button type="submit" class="btn btn-primary signup-button">Logout</button>
             </form>
             {% else %}
             <a href="{{ url_for('login') }}" class="btn btn-outline-primary me-2 login-button"><b>Login</b></a>
