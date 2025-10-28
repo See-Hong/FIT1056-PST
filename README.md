@@ -114,7 +114,6 @@ CareLog/
 ---
 
 ## 🔧 Setup Instructions
-1️⃣2️⃣
 
 ### 1️⃣ Install Dependencies
 ```
