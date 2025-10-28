@@ -3,8 +3,16 @@ from sqlalchemy import Integer, String, Date, Text, Time
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import date, time
+from enum import IntEnum
 
 db = SQLAlchemy()
+
+class Role(IntEnum):
+    PATIENT = 0
+    RECEPTIONIST = 1
+    NURSE = 2
+    DOCTOR = 3
+    ADMIN = 4
 
 class Base(DeclarativeBase):
     pass
@@ -15,9 +23,9 @@ class User(UserMixin, db.Model):
     username: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
-    gender: Mapped[str] = mapped_column(String)
-    dob: Mapped[date] = mapped_column(Date)
-    contact: Mapped[str] = mapped_column(String)
+    gender: Mapped[str] = mapped_column(String, nullable=False)
+    dob: Mapped[date] = mapped_column(Date, nullable=False)
+    contact: Mapped[str] = mapped_column(String, nullable=True)
     role_level: Mapped[int] = mapped_column(Integer, nullable=False)
     patient_profile = relationship("PatientProfile", back_populates="patient", uselist=False)
     appointments = relationship("Appointment", primaryjoin="or_(User.id==Appointment.doctor_id,"
@@ -40,9 +48,9 @@ class Appointment(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     date: Mapped[date] = mapped_column(Date, nullable=False)
     time: Mapped[time] = mapped_column(Time, nullable=False)
-    created_by: Mapped[int] = mapped_column(Integer)
-    reason: Mapped[str] = mapped_column(Text)
-    status: Mapped[str] = mapped_column(String)
+    created_by: Mapped[int] = mapped_column(Integer, nullable=False)
+    reason: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
     doctor_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), nullable=True)
     patient_id: Mapped[int] = mapped_column(db.ForeignKey("users.id"), nullable=True)
     doctor = relationship("User", foreign_keys=doctor_id)
@@ -53,7 +61,7 @@ class PatientLog(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     date: Mapped[date] = mapped_column(Date, nullable=False)
     time: Mapped[time] = mapped_column(Time, nullable=False)
-    created_by: Mapped[int] = mapped_column(Integer)
+    created_by: Mapped[int] = mapped_column(Integer, nullable=False)
     medical: Mapped[str] = mapped_column(Text, nullable=True)
     emotional: Mapped[str] = mapped_column(Text, nullable=True)
     note: Mapped[str] = mapped_column(Text, nullable=True)

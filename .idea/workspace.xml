@@ -5,29 +5,43 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="65be27fb-2a79-458b-8a7b-97f821c9e71d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/templates/account_register.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/admin/role_changer.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/staff/risk_dashboard.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/staff/staff_appointments.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/staff/staff_reports.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/instance/data.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/data.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/data.db" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/account.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/add_patient_note.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/add_patient_note.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/appointments.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/appointments.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/about.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/home/about.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/account_login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/account_login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/account_register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/account_register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/add_patient_note.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile/add_patient_note.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_base.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/admin_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/admin_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/appointments.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/appointments/appointments.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/change_password.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/change_password.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/create_appointment.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/create_appointment.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/create_patient_log.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/create_patient_log.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/edit_user_profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/edit_user_profile.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/feedback.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/feedback.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/patient_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/patient_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/patient_profiles.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/patient_profiles.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/profile_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile_edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/temps" beforeDir="false" afterPath="$PROJECT_DIR$/templates/temps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/test.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/account_login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/change_password.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile/change_password.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/create_appointment.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/appointments/create_appointment.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/create_patient_log.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/staff/create_patient_log.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/edit_user_profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile/edit_user_profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/feedback.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/home/feedback.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/home/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/patient_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/staff/patient_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/patient_profiles.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/staff/view_patient_profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/profile_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/profile/edit_patient_profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/risk_dashboard.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/role_change.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/staff_appointments.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/staff_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/staff/staff_dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/staff_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/user_list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/staff_reports.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/temp_feedback" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/temps" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/test_appointments.html" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -72,7 +86,19 @@
   "keyToString": {
     "DefaultHtmlFileTemplate": "HTML File",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python tests.Python tests for test_profile_manager.test_change_user_password.executor": "Run",
+    "Python tests.Python tests for test_profile_manager.test_change_user_password_invalid_user.executor": "Run",
+    "Python tests.Python tests for test_profile_manager.test_change_user_password_wrong_password.executor": "Run",
+    "Python tests.pytest for test_staff_manager.test_log_edit.executor": "Run",
+    "Python tests.pytest for test_staff_manager.test_search_patient.executor": "Run",
+    "Python.admin.executor": "Run",
+    "Python.appointments.executor": "Run",
+    "Python.auth.executor": "Run",
+    "Python.home.executor": "Run",
     "Python.main.executor": "Run",
+    "Python.profile.executor": "Run",
+    "Python.staff.executor": "Run",
+    "Python.staff_manager.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -89,6 +115,10 @@
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\seeho\PycharmProjects\CareLog\app" />
+      <recent name="C:\Users\seeho\PycharmProjects\CareLog\templates\staff" />
+      <recent name="C:\Users\seeho\PycharmProjects\CareLog\templates\admin" />
+      <recent name="C:\Users\seeho\PycharmProjects\CareLog\templates\profile" />
+      <recent name="C:\Users\seeho\PycharmProjects\CareLog\templates\appointments" />
     </key>
   </component>
   <component name="RunManager">
