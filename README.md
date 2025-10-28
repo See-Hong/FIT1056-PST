@@ -10,7 +10,7 @@
 > **Culturally Aware, Reflective, Empathetic Logging (CareLog)**  
 > A **Flask-based web application** designed to streamline nursing home operations, focusing on patient well-being, empathetic care, and efficient staff collaboration.
 
-![alt text](/FIT1056-PST/static/assets/display.png)
+![alt text](/static/assets/display.png)
 ---
 
 ## 📖 Table of Contents
@@ -131,10 +131,10 @@ Built with a **human-centred design philosophy**, it integrates cultural and emo
 ---
 ## 🖥 Screenshots
 
-![Home Page](/FIT1056-PST/static/assets/Homepage.png)
-![Staff Page](/FIT1056-PST/static/assets/staff_dashboard.png)
-![Admin Page](/FIT1056-PST/static/assets/admin_panel.png)
-![Appointment Page](/FIT1056-PST/static/assets/Appointments.png)
+![Home Page](/static/assets/Homepage.png)
+![Staff Page](/static/assets/staff_dashboard.png)
+![Admin Page](/static/assets/admin_panel.png)
+![Appointment Page](/static/assets/Appointments.png)
 
 ---
 ## 📁 Project Structure
