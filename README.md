@@ -27,9 +27,8 @@
 - [⚙️ Setup & Installation](#️-setup--installation)
 - [🧪 Testing](#-testing)
 - [🧠 Design Principles](#-design-principles)
-- [🧑‍⚕️ Contributors](#-contributors)
-- [🧾 License](#-license)
 - [📬 Contact](#-contact)
+- [🧾 License](#-license)
 
 ---
 
